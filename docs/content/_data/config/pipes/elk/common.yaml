@@ -1,0 +1,26 @@
+name: Elasticsearch
+description: Allows the connection to Elasticsearch nodes to automatically read and write data to an index in batch and streaming.
+
+code_directory: elk
+
+links:
+  - name: Java DateTimeFormatter
+    url: https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html
+
+fields: 
+  - name: Index
+    mandatory: "Yes"
+    description: The index where the data will be written to.
+  - name: DateField
+    mandatory: "Yes"
+    description: The document date field to be used for sub index partitioning.
+    example: DateField = "docTimestamp"
+  - name: SubIndexDatePattern
+    description: Set the date pattern to use while computing the sub index suffix. See <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html" target="_bank">Java DateTimeFormatter</a> documentation.
+    example: SubIndexDatePattern = "yyyy.MM"
+    default: "yyyy.MM"
+  - name: Options
+    mandatory: "Yes"
+    description: Spark options, as key = value pairs. "es.nodes" and "es.port" are currently mandatory.
+    example: Options { es.nodes = "elk.mycompany.com", es.port = "9000" }
+

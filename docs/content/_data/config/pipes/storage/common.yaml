@@ -1,0 +1,35 @@
+name: storage
+description: Allows the use of the default Spark file system interactions in batch and streaming.
+
+code_directory: storage
+
+links:
+  - name: Schema definition
+    url: /configuration/schema-definitions.md
+
+fields: 
+  - name: Path
+    mandatory: yes
+    description: The directory where the data is stored. Note that you may rely on <a href="/configuration/paths.html">path templatization</a>.
+    example: Path = "hdfs://path/to/data"
+  - name: Format 
+    description: The format to use to read the data
+    example: Format = "csv"
+    default: "The value is set as default in Spark configuration: spark.sql.sources.default"
+  - name: Schema
+    description: The schema of the input data. See the <a href="/configuration/schema-definitions.html">schema definitions page</a> for more information.
+    example: Schema = "myproject.models.MySchema"
+  - name: DateFilter
+    description: Pre-filter the input to focus on a specific date range. 
+    example: 
+  - name: Repartition
+    description: Matches the Spark Dataset repartition function, either by number, columns or both. One argument, either Column or Number, is mandatory.
+    example: Repartition { Number = 10, Columns = "upd_date" }
+  - name: Coalesce
+    description: Matches the Spark Dataset coalesce function.
+    example: Coalesce = 10
+  - name: Options
+    description: Spark options, as key = value pairs. The list of available options is available in the official <a href="https://spark.apache.org/docs/3.1.2/api/java/org/apache/spark/sql/DataFrameReader.html" target="_blank">Spark API documentation</a> for the DataFrameReader
+    example: Options { header = true  }
+
+fields_warning: The DateFilter field is never mandatory, but be aware that omitting it could result in processing years of data.

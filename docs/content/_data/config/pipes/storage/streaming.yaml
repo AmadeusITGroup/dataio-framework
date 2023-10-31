@@ -1,0 +1,5 @@
+input: 
+  type: com.amadeus.dataio.pipes.storage.streaming.StorageInput
+
+output:
+  type: com.amadeus.dataio.pipes.storage.streaming.StorageOutput

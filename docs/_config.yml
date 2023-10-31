@@ -1,0 +1,25 @@
+title: Data I/O
+description: A common sense approach to optimize your Spark SQL code.
+theme: just-the-docs
+source: content/
+
+url: 
+
+aux_links:
+  GitHub: https://github.com/AmadeusITGroup/dataio-framework
+
+search_enabled: true
+
+callouts:
+  warning:
+    title: Warning
+    color: red
+  important:
+    title: Important
+    color: yellow
+  info:
+    title: Info
+    color: blue
+
+mermaid:
+  version: 10.2.4
