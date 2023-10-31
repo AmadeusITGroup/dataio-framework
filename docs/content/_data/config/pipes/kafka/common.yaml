@@ -1,0 +1,25 @@
+name: Kafka
+description: Allows the connection to Kafka brokers to automatically consume or publish data to a topic in batch and streaming.
+
+code_directory: kafka
+
+links:
+  - name: Spark Kafka integration guide
+    url: https://spark.apache.org/docs/3.2.1/structured-streaming-kafka-integration.html
+
+top_warning: Please note that Kafka pipes return or accept dataframes with Kafka schema.
+
+fields: 
+  - name: Brokers
+    mandatory: "Yes"
+    description: The Kafka brokers
+    example: Brokers = "kafka1.mycompany.com:9000, kafka2.mycompany.com:8000"
+  - name: Topic
+    mandatory: Yes/No
+    description: The topic to consume. Corresponds to the subscribe Spark option. Only one among Topic, Pattern, Assign can be specified.
+    example: Topic = "test.topic"
+  - name: Options
+    description: Spark options, as key = value pairs. Note that some of the usual Kafka options for Spark are automatically added from Data IO fields (e.g. Brokers adds the kafka.bootstrap.servers option). 
+    example: Options { headers = "true" }
+
+fields_warning: Only one among Topic, Pattern, Assign can be specified.

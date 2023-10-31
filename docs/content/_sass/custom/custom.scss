@@ -1,0 +1,17 @@
+@media (min-width: 50rem){
+    .main {
+        max-width: 110rem;
+    }
+}
+
+@media (min-width: 66.5rem){
+
+    .side-bar {
+        width: auto;
+        min-width: auto;
+    }
+
+    .main {
+        margin-left: max( 17rem, calc((100% - 127rem) / 2 + 17rem) );
+      }
+}
