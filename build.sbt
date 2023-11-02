@@ -21,6 +21,14 @@ lazy val root = (project in file(".")).settings(
 
     // Inpout / Output
     "com.crealytics" %% "spark-excel" % "3.3.2_0.19.0",
+    "org.elasticsearch" %% "elasticsearch-spark-30" % "8.4.3"
+      exclude("org.scala-lang", "scala-library")
+      exclude("org.scala-lang", "scala-reflect")
+      exclude("org.slf4j", "slf4j-api")
+      exclude("org.apache.spark", "spark-core_" + scalaVersion.value.substring(0, 4))
+      exclude("org.apache.spark", "spark-sql_" + scalaVersion.value.substring(0, 4))
+      exclude("org.apache.spark", "spark-catalyst_" + scalaVersion.value.substring(0, 4))
+      exclude("org.apache.spark", "spark-streaming_" + scalaVersion.value.substring(0, 4)),
 
     // Core
     "org.apache.logging.log4j" %% "log4j-api-scala" % "12.0",
