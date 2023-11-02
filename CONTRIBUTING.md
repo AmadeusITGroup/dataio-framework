@@ -55,7 +55,7 @@ Data I/O has adopted a [Code of Conduct][codeofconduct] to ensure a welcoming an
 
 ## License
 
-Data I/O is released under the [PLACEHOLDER LICENSE][license]. By contributing to this project, you agree to license your contributions under the terms of the project's license.
+Data I/O is released under the [Apache License 2.0][license]. By contributing to this project, you agree to license your contributions under the terms of the project's license.
 
 [gettingstarted]: https://amadeusitgroup.github.io/dataio/getting-started.html
 [documentation]: https://amadeusitgroup.github.io/dataio
