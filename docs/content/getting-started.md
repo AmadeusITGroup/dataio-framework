@@ -32,14 +32,6 @@ Using Maven:
 </dependency>
 ```
 
-Or, using SBT: 
-
-```scala
-libraryDependencies += "com.amadeus.dataio" % "data-io-framework" % "x.x.x"
-```
-
---- 
-
 
 ## Minimal Example
 
