@@ -31,8 +31,8 @@ Contributions to Data I/O are welcome! To contribute, please follow the guidelin
 ## License
 This project is licensed under the Apache License 2.0 license. See the [LICENSE][license] file for more information.
 
-[gettingstarted]: https://amadeusitgroup.github.io/dataio/getting-started.html
-[documentation]: https://amadeusitgroup.github.io/dataio
+[gettingstarted]: https://amadeusitgroup.github.io/dataio-framework/getting-started.html
+[documentation]: https://amadeusitgroup.github.io/dataio-framework/
 [contributing]: CONTRIBUTING.md
 [codeofconduct]: CODE_OF_CONDUCT.md
 [license]: LICENSE
