@@ -2,12 +2,14 @@ ThisBuild / scalaVersion  := "2.12.12"
 ThisBuild / organization  := "com.amadeus.dataio"
 ThisBuild / versionScheme := Some("semver-spec")
 
+Test / parallelExecution := false // TODO check pipeline unit tests before setting to true
+
 val sparkVersion = "3.3.2"
 
 lazy val root = (project in file(".")).settings(
   name                       := "dataio-framework",
   version                    := "1.0.0",
-  coverageEnabled            := false, // TODO: fix error on Windows and set to true
+  coverageEnabled            := false, // TODO: fix error on Windows + dependency error and set to true
   coverageFailOnMinimum      := true,
   coverageMinimumStmtTotal   := 70,
   coverageMinimumBranchTotal := 90,
