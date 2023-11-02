@@ -4,15 +4,17 @@ ThisBuild / versionScheme := Some("semver-spec")
 
 Test / parallelExecution := false // TODO check pipeline unit tests before setting to true
 
+ThisBuild / dependencyOverrides += "org.scala-lang.modules" %% "scala-xml" % "1.2.0" // TODO find a better way to fix dependency compatibility issue between spark-core and scoverage
+
 val sparkVersion = "3.3.2"
 
 lazy val root = (project in file(".")).settings(
   name                       := "dataio-framework",
   version                    := "1.0.0",
-  coverageEnabled            := false, // TODO: fix error on Windows + dependency error and set to true
+  coverageEnabled            := true,
   coverageFailOnMinimum      := true,
   coverageMinimumStmtTotal   := 70,
-  coverageMinimumBranchTotal := 90,
+  coverageMinimumBranchTotal := 70,
   libraryDependencies ++= Seq(
     // Distribution
     "javax.mail" % "mail" % "1.4.7",
