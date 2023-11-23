@@ -49,7 +49,7 @@ class ConfigNodeTest extends AnyWordSpec with Matchers {
         result.name shouldBe "my-entity"
         result.typeName shouldBe "com.Entity"
         result.config.getInt("Field1") shouldBe 5
-        result.config.withoutPath("Field1").isEmpty shouldBe true
+        result.config.withoutPath("Field1").withoutPath("Name").isEmpty shouldBe true
       }
     }
 

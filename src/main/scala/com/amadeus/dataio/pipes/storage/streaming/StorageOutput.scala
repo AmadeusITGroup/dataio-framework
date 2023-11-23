@@ -73,6 +73,8 @@ case class StorageOutput(
   private[streaming] def createQueryName(): String = {
     val directory = Try { path.split(File.separatorChar).reverse.head }.toOption
 
+    logger.info(s"CreateQueryName based on $directory and $outputName.")
+
     val queryName: String = (directory, outputName) match {
       case (Some(directoryName), Some(name)) => s"QN_${name}_${directoryName}_${java.util.UUID.randomUUID}"
       case (Some(directoryName), _)          => s"QN_${directoryName}_${java.util.UUID.randomUUID}"
