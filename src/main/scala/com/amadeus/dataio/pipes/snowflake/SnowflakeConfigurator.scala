@@ -10,8 +10,8 @@ object SnowflakeConfigurator {
    * @throws com.typesafe.config.ConfigException If data is missing in the config argument. See the user documentation
    *         for the expected fields.
    */
-  def getSfUrl(implicit config: Config) : String = {
-    config.getString("sfUrl")
+  def getUrl(implicit config: Config) : String = {
+    config.getString("Url")
   }
 
   /**
@@ -20,8 +20,8 @@ object SnowflakeConfigurator {
    * @throws com.typesafe.config.ConfigException If data is missing in the config argument. See the user documentation
    *                                             for the expected fields.
    */
-  def getSfUser(implicit config: Config): String = {
-    config.getString("sfUser")
+  def getUser(implicit config: Config): String = {
+    config.getString("User")
   }
 
   /**
@@ -30,8 +30,8 @@ object SnowflakeConfigurator {
    * @throws com.typesafe.config.ConfigException If data is missing in the config argument. See the user documentation
    *                                             for the expected fields.
    */
-  def getSfDatabase(implicit config : Config) : String = {
-    config.getString("sfDatabase")
+  def getDatabase(implicit config : Config) : String = {
+    config.getString("Database")
   }
 
   /**
@@ -40,8 +40,8 @@ object SnowflakeConfigurator {
    * @throws com.typesafe.config.ConfigException If data is missing in the config argument. See the user documentation
    *                                             for the expected fields.
    */
-  def getSfSchema(implicit config : Config) : String = {
-    config.getString("sfSchema")
+  def getSchema(implicit config : Config) : String = {
+    config.getString("Schema")
   }
 
 }

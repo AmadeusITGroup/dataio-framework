@@ -2,20 +2,21 @@ package com.amadeus.dataio.pipes.snowflake.batch
 
 import com.amadeus.dataio.config.fields.getOptions
 import com.amadeus.dataio.core.{Logging, Output}
-import com.amadeus.dataio.pipes.snowflake.SnowflakeConfigurator._
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.{Dataset, SparkSession}
+import com.amadeus.dataio.pipes.snowflake.SnowflakeConfigurator._
 
 import scala.util.Try
 
 case class SnowflakeOutput(
-                          url : String,
-                          user : String,
-                          database : String,
-                          schema : String,
-                          table : String,
-                          mode : String,
-                          options: Map[String, String] = Map()
+                            url : String,
+                            user : String,
+                            database : String,
+                            schema : String,
+                            table : String,
+                            mode : String,
+                            options: Map[String, String] = Map(),
+                            config: Config = ConfigFactory.empty()
                           ) extends Output with Logging {
 
   private val SNOWFLAKE_SOURCE_NAME = "net.snowflake.spark.snowflake"
@@ -41,13 +42,10 @@ case class SnowflakeOutput(
       .option("dbtable", table)
       .mode(mode)
       .save()
-
   }
-
 }
 
 object SnowflakeOutput{
-
   /**
    * Creates a new instance of SnowflakeOutput from a typesafe Config object.
    *
@@ -56,18 +54,20 @@ object SnowflakeOutput{
    * @throws com.typesafe.config.ConfigException If any of the mandatory fields is not available in the config argument.
    */
   def apply(implicit config: Config) : SnowflakeOutput = {
-    val options = Try(getOptions).getOrElse(Map())
+    val key     = config.getString("Key")
+    val options = Try(getOptions).getOrElse(Map()) ++ Map("pem_private_key" -> key)
     val mode    = config.getString("Mode")
-    val table = config.getString("Table")
+    val table   = config.getString("Table")
 
     SnowflakeOutput(
-      url = getSfUrl,
-      user = getSfUser,
-      database = getSfDatabase,
-      schema = getSfSchema,
+      url = getUrl,
+      user = getUser,
+      database = getDatabase,
+      schema = getSchema,
       table = table,
       mode = mode,
       options = options)
+
   }
 
 }

@@ -1,9 +1,25 @@
 package com.amadeus.dataio.pipes.snowflake.batch
 
 import com.amadeus.dataio.core.{Input, Logging}
-import com.typesafe.config.Config
+import com.amadeus.dataio.config.fields.getOptions
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import com.amadeus.dataio.pipes.snowflake.SnowflakeConfigurator._
 
+import scala.util.Try
+
+/**
+ * Class for reading snowflake input
+ *
+ * @param url snowflake url
+ * @param user snowflake user
+ * @param database database used to query
+ * @param schema schema
+ * @param table table to use in snowflake
+ * @param query query
+ * @param options options
+ * @param config Contains the Typesafe Config object that was used at instantiation to configure this entity.
+ */
 case class SnowflakeInput(
                            url: String,
                            user: String,
@@ -11,7 +27,8 @@ case class SnowflakeInput(
                            schema: String,
                            table: Option[String],
                            query: Option[String],
-                           options: Map[String, String] = Map()
+                           options: Map[String, String] = Map(),
+                           config: Config = ConfigFactory.empty()
                          ) extends Input with Logging {
 
   private val SNOWFLAKE_SOURCE_NAME = "net.snowflake.spark.snowflake"
@@ -40,11 +57,29 @@ case class SnowflakeInput(
 }
 
 object SnowflakeInput {
+  /**
+   * Creates a new instance of SnowflakeInput from a typesafe Config object.
+   *
+   * @param config typesafe Config object containing the configuration fields.
+   * @return a new SnowflakeInput object.
+   * @throws com.typesafe.config.ConfigException If any of the mandatory fields is not available in the config argument.
+   */
+  def apply(implicit config: Config): SnowflakeOutput = {
+    val key = config.getString("Key")
+    val options = Try(getOptions).getOrElse(Map()) ++ Map("pem_private_key" -> key)
+    val mode = config.getString("Mode")
+    val table = config.getString("Table")
 
-  def apply(implicit config: Config) : SnowflakeInput = {
-    
+    SnowflakeOutput(
+      url = getUrl,
+      user = getUser,
+      database = getDatabase,
+      schema = getSchema,
+      table = table,
+      mode = mode,
+      options = options)
+
   }
-
 
 }
 
