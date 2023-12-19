@@ -64,22 +64,19 @@ object SnowflakeInput {
    * @return a new SnowflakeInput object.
    * @throws com.typesafe.config.ConfigException If any of the mandatory fields is not available in the config argument.
    */
-  def apply(implicit config: Config): SnowflakeOutput = {
-    val key = config.getString("Key")
-    val options = Try(getOptions).getOrElse(Map()) ++ Map("pem_private_key" -> key)
-    val mode = config.getString("Mode")
-    val table = config.getString("Table")
+  def apply(implicit config: Config) : SnowflakeInput = {
+    val options = Try(getOptions).getOrElse(Map())
+    val table = Some(config.getString("Table"))
+    val query = Some(config.getString("Query"))
 
-    SnowflakeOutput(
+    SnowflakeInput(
       url = getUrl,
       user = getUser,
       database = getDatabase,
       schema = getSchema,
       table = table,
-      mode = mode,
+      query = query,
       options = options)
-
   }
-
 }
 

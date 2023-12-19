@@ -1,10 +1,10 @@
 package com.amadeus.dataio.pipes.snowflake.batch
 
 import com.amadeus.dataio.config.fields.getOptions
-import com.amadeus.dataio.core.{Logging, Output}
+import com.amadeus.dataio.core.{Logging,Output}
+import com.amadeus.dataio.pipes.snowflake.SnowflakeConfigurator._
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.{Dataset, SparkSession}
-import com.amadeus.dataio.pipes.snowflake.SnowflakeConfigurator._
 
 import scala.util.Try
 
@@ -54,8 +54,7 @@ object SnowflakeOutput{
    * @throws com.typesafe.config.ConfigException If any of the mandatory fields is not available in the config argument.
    */
   def apply(implicit config: Config) : SnowflakeOutput = {
-    val key     = config.getString("Key")
-    val options = Try(getOptions).getOrElse(Map()) ++ Map("pem_private_key" -> key)
+    val options = Try(getOptions).getOrElse(Map())
     val mode    = config.getString("Mode")
     val table   = config.getString("Table")
 
@@ -67,9 +66,6 @@ object SnowflakeOutput{
       table = table,
       mode = mode,
       options = options)
-
   }
 
 }
-
-
