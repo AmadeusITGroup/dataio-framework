@@ -1,0 +1,33 @@
+name: Snowflake
+description: Allows the connection to Snowflake to automatically retrieve from or publish data to a Snowflake table.
+
+code_directory: snowflake
+
+links:
+  - name: Spark Snowflake API doc
+    url: https://docs.snowflake.com/en/user-guide/spark-connector-use#using-the-connector-in-scala
+
+fields: 
+  - name: Database
+    mandatory: "Yes"
+    description: Database in Snowflake
+    example: Database = "TEST_DATABASE"
+  - name: Schema
+    mandatory: "Yes"
+    description: Schema in Database. Schema has to align with the choice of Database
+    example: Schema = "TEST_SCHEMA"
+  - name: Table
+    mandatory: "Yes"
+    description: Table in Schema. Table has to align with the choice of Schema
+    example: Table = "TEST_TABLE"
+  - name: Url
+    mandatory: "Yes"
+    description: Url of the Snowflake instance to reach
+    example: Url = "snowflake.com"
+  - name: User
+    mandatory: "Yes"
+    description: Snowflake user to be used
+    example: User = "SF_USER"
+  - name: Options
+    description: Snowflake options to specify such as key = value pairs. Note that some of the usual Kafka options for Spark are automatically added from Data IO fields (e.g. Brokers adds the kafka.bootstrap.servers option).
+    example: Options { headers = "true" }

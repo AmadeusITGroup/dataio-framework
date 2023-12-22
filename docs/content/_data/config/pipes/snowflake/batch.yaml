@@ -1,0 +1,14 @@
+input:
+  type: com.amadeus.dataio.pipes.snowflake.batch.snowflakeInput
+  fields:
+  - name: Query
+    mandatory: Yes/No
+    description: The SQL query provided to Snowflake to make a specific computation
+    example: Query = "SELECT * FROM TABLE"
+output:
+  type: com.amadeus.dataio.pipes.snowflake.batch.snowflakeOutput
+  fields:
+    - name: Mode
+      mandatory: Yes/No
+      description: Writing mode on the Snowflake table
+      example: Mode = "append"
