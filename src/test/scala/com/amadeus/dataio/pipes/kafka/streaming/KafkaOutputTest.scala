@@ -5,6 +5,8 @@ import com.typesafe.config.{ConfigException, ConfigFactory}
 import org.apache.spark.sql.streaming.Trigger
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+
+import scala.concurrent.duration.Duration
 class KafkaOutputTest extends AnyWordSpec with Matchers {
 
   "KafkaOutput" should {
@@ -29,6 +31,7 @@ class KafkaOutputTest extends AnyWordSpec with Matchers {
       kafkaStreamOutput.outputName shouldEqual Some("my-test-kafka-output")
       kafkaStreamOutput.brokers shouldEqual "bktv001:9000, bktv002.amadeus.net:8000"
       kafkaStreamOutput.topic shouldEqual "test.topic"
+      kafkaStreamOutput.trigger shouldEqual Some(Trigger.ProcessingTime(Duration("60 seconds")))
     }
 
     "be initialized with all optional properties" in {
@@ -40,6 +43,7 @@ class KafkaOutputTest extends AnyWordSpec with Matchers {
             "Brokers"  -> "bktv001:9000, bktv002.amadeus.net:8000",
             "Topic"    -> "test.topic",
             "Mode"     -> "append",
+            "Trigger"  -> "Continuous",
             "Duration" -> "60 seconds",
             "Timeout"  -> "24",
             "Options" -> Map(
@@ -63,6 +67,76 @@ class KafkaOutputTest extends AnyWordSpec with Matchers {
         "kafka.security.protocol"          -> "SASL_PLAINTEXT",
         "kafka.sasl.kerberos.service.name" -> "kafka"
       )
+      kafkaStreamOutput.trigger shouldEqual Some(Trigger.Continuous(Duration("60 seconds")))
+    }
+
+    "be initialized with trigger AvailableNow" in {
+
+      val config = ConfigFactory.parseMap(
+        Map(
+          "Output" -> Map(
+            "Type"    -> "com.amadeus.dataio.output.streaming.KafkaOutput",
+            "Brokers" -> "bktv001:9000, bktv002.amadeus.net:8000",
+            "Topic"   -> "test.topic",
+            "Mode"    -> "append",
+            "Trigger" -> "AvailableNow",
+            "Timeout" -> "24",
+            "Options" -> Map(
+              "failOnDataLoss"                       -> "false",
+              "maxOffsetsPerTrigger"                 -> "20000000",
+              "\"kafka.security.protocol\""          -> "SASL_PLAINTEXT",
+              "\"kafka.sasl.kerberos.service.name\"" -> "kafka"
+            )
+          )
+        )
+      )
+
+      val kafkaStreamOutput = KafkaOutput(config.getConfig("Output"))
+
+      kafkaStreamOutput.outputName shouldEqual None
+      kafkaStreamOutput.brokers shouldEqual "bktv001:9000, bktv002.amadeus.net:8000"
+      kafkaStreamOutput.topic shouldEqual "test.topic"
+      kafkaStreamOutput.options shouldEqual Map(
+        "failOnDataLoss"                   -> "false",
+        "maxOffsetsPerTrigger"             -> "20000000",
+        "kafka.security.protocol"          -> "SASL_PLAINTEXT",
+        "kafka.sasl.kerberos.service.name" -> "kafka"
+      )
+      kafkaStreamOutput.trigger shouldEqual Some(Trigger.AvailableNow())
+    }
+
+    "be initialized with None trigger" in {
+
+      val config = ConfigFactory.parseMap(
+        Map(
+          "Output" -> Map(
+            "Type"    -> "com.amadeus.dataio.output.streaming.KafkaOutput",
+            "Brokers" -> "bktv001:9000, bktv002.amadeus.net:8000",
+            "Topic"   -> "test.topic",
+            "Mode"    -> "append",
+            "Timeout" -> "24",
+            "Options" -> Map(
+              "failOnDataLoss"                       -> "false",
+              "maxOffsetsPerTrigger"                 -> "20000000",
+              "\"kafka.security.protocol\""          -> "SASL_PLAINTEXT",
+              "\"kafka.sasl.kerberos.service.name\"" -> "kafka"
+            )
+          )
+        )
+      )
+
+      val kafkaStreamOutput = KafkaOutput(config.getConfig("Output"))
+
+      kafkaStreamOutput.outputName shouldEqual None
+      kafkaStreamOutput.brokers shouldEqual "bktv001:9000, bktv002.amadeus.net:8000"
+      kafkaStreamOutput.topic shouldEqual "test.topic"
+      kafkaStreamOutput.options shouldEqual Map(
+        "failOnDataLoss"                   -> "false",
+        "maxOffsetsPerTrigger"             -> "20000000",
+        "kafka.security.protocol"          -> "SASL_PLAINTEXT",
+        "kafka.sasl.kerberos.service.name" -> "kafka"
+      )
+      kafkaStreamOutput.trigger shouldEqual None
     }
 
     "throw an exception given missing topic but pattern" in {
@@ -70,13 +144,13 @@ class KafkaOutputTest extends AnyWordSpec with Matchers {
       val config = ConfigFactory.parseMap(
         Map(
           "Output" -> Map(
-            "Type"     -> "com.amadeus.dataio.output.streaming.KafkaOutput",
-            "Name"     -> "my-test-kafka",
-            "Brokers"  -> "bktv001:9000, bktv002.amadeus.net:8000",
-            "Pattern"  -> "test.pattern",
-            "Mode"     -> "append",
-            "Duration" -> "60 seconds",
-            "Timeout"  -> "24",
+            "Type"    -> "com.amadeus.dataio.output.streaming.KafkaOutput",
+            "Name"    -> "my-test-kafka",
+            "Brokers" -> "bktv001:9000, bktv002.amadeus.net:8000",
+            "Pattern" -> "test.pattern",
+            "Mode"    -> "append",
+            "Trigger" -> "AvailableNow",
+            "Timeout" -> "24",
             "Options" -> Map(
               "failOnDataLoss"                       -> "false",
               "maxOffsetsPerTrigger"                 -> "20000000",
@@ -156,7 +230,7 @@ class KafkaOutputTest extends AnyWordSpec with Matchers {
         KafkaOutput(
           brokers = "bktv001:9000, bktv002.amadeus.net:8000",
           topic = "test.topic",
-          processingTimeTrigger = Trigger.Once(),
+          trigger = Some(Trigger.AvailableNow()),
           timeout = 0,
           mode = "append",
           outputName = None
@@ -174,7 +248,7 @@ class KafkaOutputTest extends AnyWordSpec with Matchers {
         KafkaOutput(
           brokers = "bktv001:9000, bktv002.amadeus.net:8000",
           topic = "test.topic",
-          processingTimeTrigger = Trigger.Once(),
+          trigger = Some(Trigger.AvailableNow()),
           timeout = 0,
           mode = "append",
           outputName = Some("myTestOutput")
