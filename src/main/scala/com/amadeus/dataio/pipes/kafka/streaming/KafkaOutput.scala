@@ -5,7 +5,6 @@ import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.streaming.Trigger
 import org.apache.spark.sql.{Dataset, SparkSession}
 
-import scala.concurrent.duration.Duration
 import scala.util.Try
 
 /**
@@ -13,7 +12,7 @@ import scala.util.Try
  *
  * @param brokers brokers
  * @param topic topic
- * @param processingTimeTrigger processingTimeTrigger.
+ * @param trigger the trigger to be used for the streaming query.
  * @param timeout timeout in milliseconds.
  * @param mode mode.
  * @param options options
@@ -23,7 +22,7 @@ import scala.util.Try
 case class KafkaOutput(
     brokers: String,
     topic: String,
-    processingTimeTrigger: Trigger,
+    trigger: Option[Trigger],
     timeout: Long,
     mode: String,
     options: Map[String, String] = Map(),
@@ -39,11 +38,11 @@ case class KafkaOutput(
    * @param spark The SparkSession which will be used to write the data.
    */
   def write[T](data: Dataset[T])(implicit spark: SparkSession): Unit = {
-    logger.info(s"Write dataframe to kafka [$topic]")
+    logger.info(s"Write dataframe to kafka [$topic] using trigger [$trigger]")
 
     val queryName = createQueryName()
 
-    val streamWriter = data.writeStream
+    var streamWriter = data.writeStream
       .queryName(queryName)
       .format("kafka")
       .option("kafka.bootstrap.servers", brokers)
@@ -51,9 +50,12 @@ case class KafkaOutput(
       .options(options)
       .outputMode(mode)
 
-    val streamingQuery = streamWriter
-      .trigger(processingTimeTrigger)
-      .start()
+    streamWriter = trigger match {
+      case Some(trigger) => streamWriter.trigger(trigger)
+      case _             => streamWriter
+    }
+
+    val streamingQuery = streamWriter.start()
 
     streamingQuery.awaitTermination(timeout)
     streamingQuery.stop()
@@ -92,8 +94,7 @@ object KafkaOutput {
       case _                                       => throw new IllegalArgumentException("No topic specified for Kafka source")
     }
 
-    val duration              = Duration(config.getString("Duration"))
-    val processingTimeTrigger = Trigger.ProcessingTime(duration)
+    val trigger = getStreamingTrigger
 
     val timeout = getTimeout
     val mode    = config.getString("Mode")
@@ -104,7 +105,7 @@ object KafkaOutput {
     KafkaOutput(
       brokers,
       topic,
-      processingTimeTrigger,
+      trigger,
       timeout,
       mode,
       options,

@@ -1,37 +1,41 @@
 input:
   type: com.amadeus.dataio.pipes.kafka.streaming.KafkaInput
   fields:
-  - name: Pattern
-    mandatory: Yes/No
-    description: The pattern used to subscribe to topic(s). Corresponds to the subscribePattern Spark option. Only one among Topic, Pattern, Assign can be specified.
-    example: Pattern = "myapp-.*"
-  - name: Assign
-    mandatory: Yes/No
-    description: Specific TopicPartitions to consume. Corresponds to the assign Spark option. Only one among Topic, Pattern, Assign can be specified.
-    example: Assign = {"topicA":[0,1],"topicB":[2,4]}
-  - name: Repartition
-    description: Matches the Spark Dataset repartition function, either by number, columns or both. One argument, either Column or Number, is mandatory.
-    example: Repartition { Number = 10, Columns = "upd_date" }
-  - name: Coalesce
-    description: Matches the Spark Dataset coalesce function.
-    example: Coalesce = 10
-  - name: Schema
-    description: The schema of the input dataset. See <a href="/configuration/pipes/pipes.html#schema-definitions">schema definitions</a> for more information.
-    example: Schema = "myproject.models.Query"
+    - name: Pattern
+      mandatory: Yes/No
+      description: The pattern used to subscribe to topic(s). Corresponds to the subscribePattern Spark option. Only one among Topic, Pattern, Assign can be specified.
+      example: Pattern = "myapp-.*"
+    - name: Assign
+      mandatory: Yes/No
+      description: Specific TopicPartitions to consume. Corresponds to the assign Spark option. Only one among Topic, Pattern, Assign can be specified.
+      example: Assign = {"topicA":[0,1],"topicB":[2,4]}
+    - name: Repartition
+      description: Matches the Spark Dataset repartition function, either by number, columns or both. One argument, either Column or Number, is mandatory.
+      example: Repartition { Number = 10, Columns = "upd_date" }
+    - name: Coalesce
+      description: Matches the Spark Dataset coalesce function.
+      example: Coalesce = 10
+    - name: Schema
+      description: The schema of the input dataset. See <a href="/configuration/pipes/pipes.html#schema-definitions">schema definitions</a> for more information.
+      example: Schema = "myproject.models.Query"
 
-output: 
+output:
   type: com.amadeus.dataio.pipes.kafka.streaming.KafkaOutput
   fields:
-  - name: Duration
-    mandatory: "Yes"
-    description: Sets the trigger for the stream query. Controls the trigger() Spark function.
-    example: Duration = "60 seconds"
-  - name: Timeout
-    mandatory: "Yes"
-    description: Controls the amount of time before returning from the streaming query, in hours. It can be a String or an Int.
-    example: Timeout = 24
-  - name: Mode
-    mandatory: "Yes"
-    description: The Spark Structured Streaming output mode.
-    example: Mode = "complete"
-    default: append
+    - name: Trigger
+      mandatory: "No"
+      description: Sets the trigger for the stream query. Can be AvailableNow, Continuous or empty. Controls the trigger() Spark function.
+      example: Trigger = "AvailableNow"
+    - name: Duration
+      mandatory: "No"
+      description: Sets the trigger for the stream query. Controls the trigger() Spark function. In case no Trigger is defined, will set a ProcessingTime trigger.
+      example: Duration = "60 seconds"
+    - name: Timeout
+      mandatory: "Yes"
+      description: Controls the amount of time before returning from the streaming query, in hours. It can be a String or an Int.
+      example: Timeout = 24
+    - name: Mode
+      mandatory: "Yes"
+      description: The Spark Structured Streaming output mode.
+      example: Mode = "complete"
+      default: append
