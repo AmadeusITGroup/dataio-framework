@@ -17,7 +17,7 @@ nav_order: 2
 
 ## Installation
 
-Data I/O was built with Spark 3.3.2 and Scala 2.12. Support for prior versions is not guaranteed.
+Data I/O was built and tested with Spark 3.2.1/3.3.2/3.4.1 and Scala 2.12. Support for prior versions is not guaranteed.
 {: .warning}
 
 Published releases are available on GitHub Packages, in the AmadeusITGroup repository.
@@ -27,7 +27,7 @@ Using Maven:
 ```xml
 <dependency>
     <groupId>com.amadeus.dataio</groupId>
-    <artifactId>dataio-framework</artifactId>
+    <artifactId>dataio-core</artifactId>
     <version>x.x.x</version>
 </dependency>
 ```
