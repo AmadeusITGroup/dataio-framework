@@ -67,9 +67,11 @@ case class KafkaOutput(
    */
   private[streaming] def createQueryName(): String = {
 
-    outputName match {
-      case Some(name) => s"QN_${name}_${topic}_${java.util.UUID.randomUUID}"
-      case _          => s"QN_${topic}_${java.util.UUID.randomUUID}"
+    (outputName, topic) match {
+      case (Some(name), Some(t)) => s"QN_${name}_${t}_${java.util.UUID.randomUUID}"
+      case (Some(name), None)    => s"QN_${name}_${java.util.UUID.randomUUID}"
+      case (None, Some(t))       => s"QN_KafkaOutput_${t}_${java.util.UUID.randomUUID}"
+      case _                     => s"QN_KafkaOutput_${java.util.UUID.randomUUID}"
     }
 
   }

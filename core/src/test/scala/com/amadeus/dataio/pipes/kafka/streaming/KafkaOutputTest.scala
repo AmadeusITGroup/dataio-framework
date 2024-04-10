@@ -28,7 +28,7 @@ class KafkaOutputTest extends AnyWordSpec with Matchers {
 
       kafkaStreamOutput.outputName shouldEqual Some("my-test-kafka-output")
       kafkaStreamOutput.brokers shouldEqual "bktv001:9000, bktv002.amadeus.net:8000"
-      kafkaStreamOutput.topic shouldEqual "test.topic"
+      kafkaStreamOutput.topic shouldEqual Some("test.topic")
     }
 
     "be initialized with all optional properties" in {
@@ -56,67 +56,13 @@ class KafkaOutputTest extends AnyWordSpec with Matchers {
 
       kafkaStreamOutput.outputName shouldEqual None
       kafkaStreamOutput.brokers shouldEqual "bktv001:9000, bktv002.amadeus.net:8000"
-      kafkaStreamOutput.topic shouldEqual "test.topic"
+      kafkaStreamOutput.topic shouldEqual Some("test.topic")
       kafkaStreamOutput.options shouldEqual Map(
         "failOnDataLoss"                   -> "false",
         "maxOffsetsPerTrigger"             -> "20000000",
         "kafka.security.protocol"          -> "SASL_PLAINTEXT",
         "kafka.sasl.kerberos.service.name" -> "kafka"
       )
-    }
-
-    "throw an exception given missing topic but pattern" in {
-
-      val config = ConfigFactory.parseMap(
-        Map(
-          "Output" -> Map(
-            "Type"     -> "com.amadeus.dataio.output.streaming.KafkaOutput",
-            "Name"     -> "my-test-kafka",
-            "Brokers"  -> "bktv001:9000, bktv002.amadeus.net:8000",
-            "Pattern"  -> "test.pattern",
-            "Mode"     -> "append",
-            "Duration" -> "60 seconds",
-            "Timeout"  -> "24",
-            "Options" -> Map(
-              "failOnDataLoss"                       -> "false",
-              "maxOffsetsPerTrigger"                 -> "20000000",
-              "\"kafka.security.protocol\""          -> "SASL_PLAINTEXT",
-              "\"kafka.sasl.kerberos.service.name\"" -> "kafka"
-            )
-          )
-        )
-      )
-
-      intercept[IllegalArgumentException] {
-        KafkaOutput(config.getConfig("Output"))
-      }
-    }
-
-    "throw an exception given missing topic but assign" in {
-
-      val config = ConfigFactory.parseMap(
-        Map(
-          "Output" -> Map(
-            "Type"     -> "com.amadeus.dataio.output.streaming.KafkaOutput",
-            "Name"     -> "my-test-kafka",
-            "Brokers"  -> "bktv001:9000, bktv002.amadeus.net:8000",
-            "Assign"   -> "test.assign",
-            "Mode"     -> "append",
-            "Duration" -> "60 seconds",
-            "Timeout"  -> "24",
-            "Options" -> Map(
-              "failOnDataLoss"                       -> "false",
-              "maxOffsetsPerTrigger"                 -> "20000000",
-              "\"kafka.security.protocol\""          -> "SASL_PLAINTEXT",
-              "\"kafka.sasl.kerberos.service.name\"" -> "kafka"
-            )
-          )
-        )
-      )
-
-      intercept[IllegalArgumentException] {
-        KafkaOutput(config.getConfig("Output"))
-      }
     }
 
     "throw an exception given missing brokers" in {
@@ -155,7 +101,7 @@ class KafkaOutputTest extends AnyWordSpec with Matchers {
       val kafkaOutput =
         KafkaOutput(
           brokers = "bktv001:9000, bktv002.amadeus.net:8000",
-          topic = "test.topic",
+          topic = Some("test.topic"),
           processingTimeTrigger = Trigger.Once(),
           timeout = 0,
           mode = "append",
@@ -164,7 +110,7 @@ class KafkaOutputTest extends AnyWordSpec with Matchers {
 
       val queryName = kafkaOutput.createQueryName()
 
-      queryName should fullyMatch regex "^QN_test.topic_" + uuidPattern + "$"
+      queryName should fullyMatch regex "^QN_KafkaOutput_test.topic_" + uuidPattern + "$"
 
     }
 
@@ -173,7 +119,7 @@ class KafkaOutputTest extends AnyWordSpec with Matchers {
       val kafkaOutput =
         KafkaOutput(
           brokers = "bktv001:9000, bktv002.amadeus.net:8000",
-          topic = "test.topic",
+          topic = Some("test.topic"),
           processingTimeTrigger = Trigger.Once(),
           timeout = 0,
           mode = "append",
@@ -183,6 +129,42 @@ class KafkaOutputTest extends AnyWordSpec with Matchers {
       val queryName = kafkaOutput.createQueryName()
 
       queryName should fullyMatch regex "^QN_myTestOutput_test.topic_" + uuidPattern + "$"
+
+    }
+
+    "return a query name based on output name" in {
+
+      val kafkaOutput =
+        KafkaOutput(
+          brokers = "bktv001:9000, bktv002.amadeus.net:8000",
+          topic = None,
+          processingTimeTrigger = Trigger.Once(),
+          timeout = 0,
+          mode = "append",
+          outputName = Some("myTestOutput")
+        )
+
+      val queryName = kafkaOutput.createQueryName()
+
+      queryName should fullyMatch regex "^QN_myTestOutput_" + uuidPattern + "$"
+
+    }
+
+    "return a query name based without name or topic" in {
+
+      val kafkaOutput =
+        KafkaOutput(
+          brokers = "bktv001:9000, bktv002.amadeus.net:8000",
+          topic = None,
+          processingTimeTrigger = Trigger.Once(),
+          timeout = 0,
+          mode = "append",
+          outputName = None
+        )
+
+      val queryName = kafkaOutput.createQueryName()
+
+      queryName should fullyMatch regex "^QN_KafkaOutput_" + uuidPattern + "$"
 
     }
   }
