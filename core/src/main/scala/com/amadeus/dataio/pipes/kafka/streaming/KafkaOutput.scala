@@ -22,7 +22,7 @@ import scala.util.Try
  */
 case class KafkaOutput(
     brokers: String,
-    topic: String,
+    topic: Option[String],
     processingTimeTrigger: Trigger,
     timeout: Long,
     mode: String,
@@ -46,14 +46,15 @@ case class KafkaOutput(
     val streamWriter = data.writeStream
       .queryName(queryName)
       .format("kafka")
-      .option("kafka.bootstrap.servers", brokers)
-      .option("topic", topic)
       .options(options)
+      .option("kafka.bootstrap.servers", brokers)
       .outputMode(mode)
-
-    val streamingQuery = streamWriter
       .trigger(processingTimeTrigger)
-      .start()
+
+    val streamingQuery = topic match {
+      case Some(t) => streamWriter.option("topic", t).start()
+      case _       => streamWriter.start()
+    }
 
     streamingQuery.awaitTermination(timeout)
     streamingQuery.stop()
@@ -66,9 +67,11 @@ case class KafkaOutput(
    */
   private[streaming] def createQueryName(): String = {
 
-    outputName match {
-      case Some(name) => s"QN_${name}_${topic}_${java.util.UUID.randomUUID}"
-      case _          => s"QN_${topic}_${java.util.UUID.randomUUID}"
+    (outputName, topic) match {
+      case (Some(name), Some(t)) => s"QN_${name}_${t}_${java.util.UUID.randomUUID}"
+      case (Some(name), None)    => s"QN_${name}_${java.util.UUID.randomUUID}"
+      case (None, Some(t))       => s"QN_KafkaOutput_${t}_${java.util.UUID.randomUUID}"
+      case _                     => s"QN_KafkaOutput_${java.util.UUID.randomUUID}"
     }
 
   }
@@ -87,10 +90,7 @@ object KafkaOutput {
    */
   def apply(implicit config: Config): KafkaOutput = {
     val brokers = getBroker
-    val topic = getTopic match {
-      case Some(topicToUse) if topicToUse.nonEmpty => topicToUse
-      case _                                       => throw new IllegalArgumentException("No topic specified for Kafka source")
-    }
+    val topic   = getTopic
 
     val duration              = Duration(config.getString("Duration"))
     val processingTimeTrigger = Trigger.ProcessingTime(duration)
