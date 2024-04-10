@@ -65,7 +65,7 @@ ThisBuild / versionScheme := Some("strict")
 
 // Projects configuration
   lazy val root = (project in file("."))
-    .aggregate(core)
+    .aggregate(core, test)
     .settings(
       publishArtifact := false
     )
@@ -87,4 +87,10 @@ ThisBuild / versionScheme := Some("strict")
           exclude ("org.apache.spark", "spark-catalyst_" + scalaVersion.value.substring(0, 4))
           exclude ("org.apache.spark", "spark-streaming_" + scalaVersion.value.substring(0, 4))
       )
+    )
+
+    lazy val test = (project in file("test"))
+    .settings(
+      name := "dataio-test",
+      libraryDependencies ++= Seq()
     )
