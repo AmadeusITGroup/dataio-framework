@@ -34,6 +34,7 @@ trait SparkSpec extends TestSuite with BeforeAndAfter {
       .builder()
       .master("local[1]")
       .config("spark.ui.enabled", "false")
+      .config(overrideSparkConf)
       .appName(getTestName)
       .getOrCreate()
   }
@@ -41,6 +42,12 @@ trait SparkSpec extends TestSuite with BeforeAndAfter {
   after {
     spark.close()
   }
+
+  /**
+   * Override to edit the Spark configuration.
+   * @return The map of new configuration values.
+   */
+  def overrideSparkConf: Map[String, String] = Map.empty
 
   /**
    * @return the test suite's name
