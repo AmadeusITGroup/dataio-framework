@@ -2,19 +2,17 @@ package com.amadeus.dataio.pipes.elk.streaming
 
 import com.amadeus.dataio.core.{Logging, Output}
 import com.amadeus.dataio.pipes.elk.ElkOutputCommons
-import com.amadeus.dataio.pipes.elk.ElkOutputCommons.{DefaultSuffixDatePattern, checkNodesIsDefined, checkPortIsDefined}
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.streaming.Trigger
 import org.apache.spark.sql.{Dataset, SparkSession}
 
-import scala.concurrent.duration.Duration
 import scala.util.Try
 
 /**
  * Allows to write stream data to Elasticsearch with automatic date sub-indexing.
  *
  * @param index the Index to write to.
- * @param processingTimeTrigger processingTimeTrigger.
+ * @param trigger the trigger to be used for the streaming query.
  * @param timeout timeout in milliseconds.
  * @param mode mode.
  * @param options options.
@@ -25,7 +23,7 @@ import scala.util.Try
  */
 case class ElkOutput(
     index: String,
-    processingTimeTrigger: Trigger,
+    trigger: Option[Trigger],
     timeout: Long,
     mode: String,
     options: Map[String, String] = Map.empty,
@@ -45,19 +43,22 @@ case class ElkOutput(
    */
   def write[T](data: Dataset[T])(implicit spark: SparkSession): Unit = {
     val fullIndexName = computeFullIndexName()
-    logger.info(s"Write dataframe to Elasticsearch index [$fullIndexName]")
+    logger.info(s"Write dataframe to Elasticsearch index [$fullIndexName] using trigger [$trigger]")
 
     val queryName = createQueryName()
 
-    val streamWriter = data.writeStream
+    var streamWriter = data.writeStream
       .queryName(queryName)
       .outputMode(mode)
       .format(Format)
       .options(options)
 
-    val streamingQuery = streamWriter
-      .trigger(processingTimeTrigger)
-      .start(fullIndexName)
+    streamWriter = trigger match {
+      case Some(trigger) => streamWriter.trigger(trigger)
+      case _             => streamWriter
+    }
+
+    val streamingQuery = streamWriter.start(fullIndexName)
 
     streamingQuery.awaitTermination(timeout)
     streamingQuery.stop()
@@ -81,6 +82,7 @@ case class ElkOutput(
 object ElkOutput {
   import com.amadeus.dataio.config.fields._
   import com.amadeus.dataio.pipes.elk.ElkConfigurator._
+  import com.amadeus.dataio.pipes.elk.ElkOutputCommons.{DefaultSuffixDatePattern, checkNodesIsDefined, checkPortIsDefined}
 
   /**
    * Creates an ElkOutput based on a given configuration.
@@ -94,8 +96,7 @@ object ElkOutput {
 
     val mode = config.getString("Mode")
 
-    val duration              = Duration(config.getString("Duration"))
-    val processingTimeTrigger = Trigger.ProcessingTime(duration)
+    val trigger = getStreamingTrigger
 
     val timeout = getTimeout
 
@@ -112,7 +113,7 @@ object ElkOutput {
 
     ElkOutput(
       index = index,
-      processingTimeTrigger = processingTimeTrigger,
+      trigger = trigger,
       timeout = timeout,
       mode = mode,
       options = options,

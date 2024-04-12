@@ -25,7 +25,6 @@ class OutputHandlerTest extends AnyWordSpec with Matchers {
             "Format"             -> "delta",
             "PartitioningColumn" -> "upd_date,version",
             "Mode"               -> "update",
-            "Duration"           -> "60 seconds",
             "Timeout"            -> "24",
             "Options" -> Map(
               "\"spark.sql.parquet.compression.codec\"" -> "snappy",
@@ -44,7 +43,7 @@ class OutputHandlerTest extends AnyWordSpec with Matchers {
       storageStreamOutput.format shouldEqual "delta"
       storageStreamOutput.path shouldEqual "output/fileStreamOutputConfigTest"
       storageStreamOutput.partitioningColumns shouldEqual Seq("upd_date", "version")
-      Option(storageStreamOutput.processingTimeTrigger) shouldNot be(None)
+      storageStreamOutput.trigger shouldEqual None
       storageStreamOutput.timeout shouldEqual 86400000
       storageStreamOutput.mode shouldEqual "update"
       storageStreamOutput.options shouldEqual Map(
@@ -101,8 +100,7 @@ class OutputHandlerTest extends AnyWordSpec with Matchers {
             streamingStorage.format shouldEqual "delta"
             streamingStorage.path shouldEqual "output/fileStreamOutputConfigTest"
             streamingStorage.partitioningColumns shouldEqual Seq("upd_date", "version")
-            Option(streamingStorage.processingTimeTrigger) shouldNot be(None)
-            streamingStorage.processingTimeTrigger shouldEqual Trigger.ProcessingTime(Duration("60 seconds"))
+            streamingStorage.trigger shouldEqual Some(Trigger.ProcessingTime(Duration("60 seconds")))
             streamingStorage.timeout shouldEqual 86400000
             streamingStorage.mode shouldEqual "update"
             streamingStorage.options shouldEqual Map(

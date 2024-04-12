@@ -16,7 +16,7 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
       val config = ConfigFactory.parseMap(
         Map(
           "Output" -> Map(
-            "Type"      -> "com.amadeus.dataio.pipes.elk.streaming.ElkOutput",
+            "Type"      -> "com.amadeus.dataio.output.streaming.ElkOutput",
             "Name"      -> "my-test-elk",
             "Nodes"     -> "bktv001, bktv002.amadeus.net",
             "Ports"     -> "9200",
@@ -43,7 +43,7 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
       elkStreamingOutput.dateField shouldEqual "docDate"
       elkStreamingOutput.suffixDatePattern shouldEqual "yyyy.MM"
       elkStreamingOutput.mode shouldEqual "append"
-      elkStreamingOutput.processingTimeTrigger shouldEqual Trigger.ProcessingTime(Duration("6 hours"))
+      elkStreamingOutput.trigger shouldEqual Some(Trigger.ProcessingTime(Duration("6 hours")))
       elkStreamingOutput.timeout shouldEqual 86400000
       elkStreamingOutput.options shouldEqual Map(
         "es.net.ssl.cert.allow.self.signed" -> "true",
@@ -66,6 +66,7 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
             "Index"     -> "test.index",
             "DateField" -> "docDate",
             "Mode"      -> "append",
+            "Trigger"   -> "Continuous",
             "Duration"  -> "6 hours",
             "Timeout"   -> "24",
             "Options" -> Map(
@@ -86,7 +87,7 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
       elkStreamingOutput.dateField shouldEqual "docDate"
       elkStreamingOutput.suffixDatePattern shouldEqual "yyyy.MM"
       elkStreamingOutput.mode shouldEqual "append"
-      elkStreamingOutput.processingTimeTrigger shouldEqual Trigger.ProcessingTime(Duration("6 hours"))
+      elkStreamingOutput.trigger shouldEqual Some(Trigger.Continuous(Duration("6 hours")))
       elkStreamingOutput.timeout shouldEqual 86400000
       elkStreamingOutput.options shouldEqual Map(
         "es.net.ssl.cert.allow.self.signed" -> "true",
@@ -103,7 +104,7 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
       val config = ConfigFactory.parseMap(
         Map(
           "Output" -> Map(
-            "Type"                -> "com.amadeus.dataio.pipes.elk.streaming.ElkOutput",
+            "Type"                -> "com.amadeus.dataio.output.streaming.ElkOutput",
             "Name"                -> "my-test-elk",
             "Nodes"               -> "bktv001, bktv002.amadeus.net",
             "Ports"               -> "9200",
@@ -111,7 +112,7 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
             "DateField"           -> "docDate",
             "SubIndexDatePattern" -> "yyyy.MM.dd",
             "Mode"                -> "append",
-            "Duration"            -> "6 hours",
+            "Trigger"             -> "AvailableNow",
             "Timeout"             -> "24",
             "Options" -> Map(
               "\"es.net.ssl.cert.allow.self.signed\"" -> true,
@@ -131,7 +132,51 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
       elkStreamingOutput.dateField shouldEqual "docDate"
       elkStreamingOutput.suffixDatePattern shouldEqual "yyyy.MM.dd"
       elkStreamingOutput.mode shouldEqual "append"
-      elkStreamingOutput.processingTimeTrigger shouldEqual Trigger.ProcessingTime(Duration("6 hours"))
+      elkStreamingOutput.trigger shouldEqual Some(Trigger.AvailableNow())
+      elkStreamingOutput.timeout shouldEqual 86400000
+      elkStreamingOutput.options shouldEqual Map(
+        "es.net.ssl.cert.allow.self.signed" -> "true",
+        "es.index.auto.create"              -> "true",
+        "es.mapping.id"                     -> "docId",
+        "es.port"                           -> "9200",
+        "es.nodes"                          -> "bktv001, bktv002.amadeus.net"
+      )
+
+    }
+
+    "be initialized according to configuration without trigger" in {
+
+      val config = ConfigFactory.parseMap(
+        Map(
+          "Output" -> Map(
+            "Type"                -> "com.amadeus.dataio.output.streaming.ElkOutput",
+            "Name"                -> "my-test-elk",
+            "Nodes"               -> "bktv001, bktv002.amadeus.net",
+            "Ports"               -> "9200",
+            "Index"               -> "test.index",
+            "DateField"           -> "docDate",
+            "SubIndexDatePattern" -> "yyyy.MM.dd",
+            "Mode"                -> "append",
+            "Timeout"             -> "24",
+            "Options" -> Map(
+              "\"es.net.ssl.cert.allow.self.signed\"" -> true,
+              "\"es.index.auto.create\""              -> true,
+              "\"es.mapping.id\""                     -> "docId",
+              "\"es.port\""                           -> "9200",
+              "\"es.nodes\""                          -> "bktv001, bktv002.amadeus.net"
+            )
+          )
+        )
+      )
+
+      val elkStreamingOutput = ElkOutput.apply(config.getConfig("Output"))
+
+      elkStreamingOutput.outputName shouldEqual Some("my-test-elk")
+      elkStreamingOutput.index shouldEqual "test.index"
+      elkStreamingOutput.dateField shouldEqual "docDate"
+      elkStreamingOutput.suffixDatePattern shouldEqual "yyyy.MM.dd"
+      elkStreamingOutput.mode shouldEqual "append"
+      elkStreamingOutput.trigger shouldEqual None
       elkStreamingOutput.timeout shouldEqual 86400000
       elkStreamingOutput.options shouldEqual Map(
         "es.net.ssl.cert.allow.self.signed" -> "true",
@@ -151,7 +196,7 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
     "return a query name based on index name" in {
 
       val elkOutput =
-        ElkOutput(index = "test.index", processingTimeTrigger = null, timeout = 0L, mode = "", dateField = "docDate", suffixDatePattern = "yyyy.MM", outputName = None)
+        ElkOutput(index = "test.index", trigger = None, timeout = 0L, mode = "", dateField = "docDate", suffixDatePattern = "yyyy.MM", outputName = None)
 
       val queryName = elkOutput.createQueryName()
 
@@ -163,7 +208,7 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
 
       val elkOutput = ElkOutput(
         index = "test.index",
-        processingTimeTrigger = null,
+        trigger = None,
         timeout = 0L,
         mode = "",
         dateField = "docDate",

@@ -6,7 +6,6 @@ import org.apache.spark.sql.streaming.Trigger
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 import java.io.File
-import scala.concurrent.duration.Duration
 import scala.util.Try
 
 /**
@@ -15,7 +14,7 @@ import scala.util.Try
  * @param format the output format.
  * @param path the path.
  * @param partitioningColumns the columns to partition by.
- * @param processingTimeTrigger processingTimeTrigger.
+ * @param trigger the trigger to be used for the streaming query.
  * @param timeout timeout in milliseconds.
  * @param mode mode.
  * @param options options.
@@ -26,7 +25,7 @@ case class StorageOutput(
     format: String,
     path: String,
     partitioningColumns: Seq[String],
-    processingTimeTrigger: Trigger,
+    trigger: Option[Trigger],
     timeout: Long,
     mode: String,
     options: Map[String, String] = Map(),
@@ -42,7 +41,7 @@ case class StorageOutput(
    * @param spark The SparkSession which will be used to write the data.
    */
   def write[T](data: Dataset[T])(implicit spark: SparkSession): Unit = {
-    logger.info(s"Write dataframe to storage [$path]")
+    logger.info(s"Write dataframe to storage [$path] using trigger [$trigger]")
 
     val queryName = createQueryName()
 
@@ -57,9 +56,12 @@ case class StorageOutput(
       streamWriter = streamWriter.partitionBy(partitioningColumns: _*)
     }
 
-    val streamingQuery = streamWriter
-      .trigger(processingTimeTrigger)
-      .start(path)
+    streamWriter = trigger match {
+      case Some(trigger) => streamWriter.trigger(trigger)
+      case _             => streamWriter
+    }
+
+    val streamingQuery = streamWriter.start(path)
 
     streamingQuery.awaitTermination(timeout)
     streamingQuery.stop()
@@ -72,6 +74,8 @@ case class StorageOutput(
    */
   private[streaming] def createQueryName(): String = {
     val directory = Try { path.split(File.separatorChar).reverse.head }.toOption
+
+    logger.info(s"CreateQueryName based on $directory and $outputName.")
 
     val queryName: String = (directory, outputName) match {
       case (Some(directoryName), Some(name)) => s"QN_${name}_${directoryName}_${java.util.UUID.randomUUID}"
@@ -93,6 +97,7 @@ object StorageOutput {
    * @return a new instance of StorageOutput.
    */
   def apply(implicit config: Config): StorageOutput = {
+
     val format = config.getString("Format")
     val path   = getPath
 
@@ -102,8 +107,7 @@ object StorageOutput {
 
     val mode = config.getString("Mode")
 
-    val duration              = Duration(config.getString("Duration"))
-    val processingTimeTrigger = Trigger.ProcessingTime(duration)
+    val trigger = getStreamingTrigger
 
     val timeout = getTimeout
 
@@ -113,7 +117,7 @@ object StorageOutput {
       format,
       path,
       partitioningColumns,
-      processingTimeTrigger,
+      trigger,
       timeout,
       mode,
       options,
