@@ -7,6 +7,10 @@ on:
         description: 'Version to publish (SemVer)'
         type: string
         required: true
+      spark-version:
+        description: 'Spark version override (SemVer)'
+        type: string
+        required: false
 
 jobs:
   publish:
@@ -26,6 +30,13 @@ jobs:
         java-version: 8
         distribution: "temurin"
         cache: "sbt"
+    - if: ${{ github.event.inputs.spark-version != '' }}
+      env:
+        SPARK_VERSION: ${{ inputs.spark-version }}
+      run: echo "SPARK_VERSION_OVERRIDE=${SPARK_VERSION}" >> $GITHUB_ENV
     - run: sbt "release release-version ${VERSION} with-defaults"
 
-run-name: ${{ format('Publishing version {0}', inputs.version) }}
+run-name: ${{ github.event.inputs.spark-version != '' 
+    && format('Publishing version {0} with Spark {1}', inputs.version, inputs.spark-version) 
+    || format('Publishing version {0}', inputs.version)
+  }}

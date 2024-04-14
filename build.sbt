@@ -4,7 +4,7 @@ ThisBuild / versionScheme := Some("strict")
 ThisBuild / scalaVersion := "2.12.12"
 ThisBuild / organization := "com.amadeus.dataio"
 val sparkVersion = settingKey[String]("The version of Spark used for building.")
-ThisBuild / sparkVersion := "3.4.1"
+ThisBuild / sparkVersion := sys.env.getOrElse("SPARK_VERSION_OVERRIDE", "3.4.1")
 
 // Common dependencies
 ThisBuild / libraryDependencies ++= Seq(
