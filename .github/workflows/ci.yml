@@ -18,11 +18,11 @@ on:
         required: true
 
 jobs:
-  spark_versions_validation:
+  spark-versions-validation:
     if: ${{ github.event_name != 'workflow_dispatch' }}
     strategy:
       matrix:
-        spark_version: ['3.2.4', '3.3.2', '3.4.1']
+        spark-version: ['3.2.4', '3.3.2', '3.4.1']
     runs-on: ubuntu-latest
     steps: 
     - uses: actions/checkout@v4
@@ -32,10 +32,8 @@ jobs:
         distribution: "temurin"
         cache: "sbt"
     - env:
-        SPARK_VERSION_OVERRIDE: ${{ matrix.spark_version }}
-      run: |
-        echo "$SPARK_VERSION_OVERRIDE" > project/spark-version.conf
-    - run: cat project/spark-version.conf
+        SPARK_VERSION: ${{ matrix.spark-version }}
+      run: echo "SPARK_VERSION_OVERRIDE=${SPARK_VERSION}" >> $GITHUB_ENV
     - run: sbt compile 
     - run: sbt test 
 
