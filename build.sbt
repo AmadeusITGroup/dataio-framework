@@ -74,7 +74,6 @@ lazy val core = (project in file("core"))
       // Distribution
       "javax.mail" % "mail" % "1.4.7",
       // Input / Output
-      "com.crealytics"    %% "spark-excel"            % s"${sparkVersion.value}_0.19.0",
       "org.elasticsearch" %% "elasticsearch-spark-30" % "8.4.3"
         exclude ("org.scala-lang", "scala-library")
         exclude ("org.scala-lang", "scala-reflect")
