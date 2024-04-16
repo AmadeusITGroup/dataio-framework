@@ -12,9 +12,9 @@ class SnowflakeInputTest extends AnyWordSpec with Matchers {
       val config = ConfigFactory.parseMap(
         Map(
           "Input" -> Map(
-            "Name"     -> "my-test-snowflake",
-            "Type"     -> "com.amadeus.dataio.pipes.snowflake.batch.SnowflakeInput",
-            "Options"  -> Map(
+            "Name" -> "my-test-snowflake",
+            "Type" -> "com.amadeus.dataio.pipes.snowflake.batch.SnowflakeInput",
+            "Options" -> Map(
               "sfDatabase" -> "TESTDATABASE",
               "sfSchema"   -> "TESTSCHEMA",
               "sfUser"     -> "TESTUSER",
@@ -43,8 +43,8 @@ class SnowflakeInputTest extends AnyWordSpec with Matchers {
     val config = ConfigFactory.parseMap(
       Map(
         "Input" -> Map(
-          "Name"     -> "my-test-snowflake",
-          "Type"     -> "com.amadeus.dataio.pipes.snowflake.batch.SnowflakeInput",
+          "Name" -> "my-test-snowflake",
+          "Type" -> "com.amadeus.dataio.pipes.snowflake.batch.SnowflakeInput"
         )
       )
     )

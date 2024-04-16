@@ -23,10 +23,10 @@ class SnowflakeOutputTest extends AnyWordSpec with Matchers {
             "Timeout"  -> "24",
             "Options" -> Map(
               "dbtable"     -> "test-table",
-              "sfUrl"      -> "http://snowflake.com",
-              "sfUser"     -> "my-user",
-              "sfDatabase" -> "db",
-              "sfSchema"   -> "test-schema",
+              "sfUrl"       -> "http://snowflake.com",
+              "sfUser"      -> "my-user",
+              "sfDatabase"  -> "db",
+              "sfSchema"    -> "test-schema",
               "sfWarehouse" -> "test-warehouse",
               "sfRole"      -> "tester"
             )
@@ -67,10 +67,10 @@ class SnowflakeOutputTest extends AnyWordSpec with Matchers {
             "AddTimestampOnInsert" -> true,
             "Options" -> Map(
               "dbtable"     -> "test-table",
-              "sfUrl"      -> "http://snowflake.com",
-              "sfUser"     -> "my-user",
-              "sfDatabase" -> "db",
-              "sfSchema"   -> "test-schema",
+              "sfUrl"       -> "http://snowflake.com",
+              "sfUser"      -> "my-user",
+              "sfDatabase"  -> "db",
+              "sfSchema"    -> "test-schema",
               "sfWarehouse" -> "test-warehouse",
               "sfRole"      -> "tester"
             )
@@ -111,10 +111,10 @@ class SnowflakeOutputTest extends AnyWordSpec with Matchers {
             "AddTimestampOnInsert" -> false,
             "Options" -> Map(
               "dbtable"     -> "test-table",
-              "sfUrl"      -> "http://snowflake.com",
-              "sfUser"     -> "my-user",
-              "sfDatabase" -> "db",
-              "sfSchema"   -> "test-schema",
+              "sfUrl"       -> "http://snowflake.com",
+              "sfUser"      -> "my-user",
+              "sfDatabase"  -> "db",
+              "sfSchema"    -> "test-schema",
               "sfWarehouse" -> "test-warehouse",
               "sfRole"      -> "tester"
             )
@@ -126,10 +126,10 @@ class SnowflakeOutputTest extends AnyWordSpec with Matchers {
 
       val expectedSnowflakeOptions = Map(
         "dbtable"     -> "test-table",
-        "sfUrl"      -> "http://snowflake.com",
-        "sfUser"     -> "my-user",
-        "sfDatabase" -> "db",
-        "sfSchema"   -> "test-schema",
+        "sfUrl"       -> "http://snowflake.com",
+        "sfUser"      -> "my-user",
+        "sfDatabase"  -> "db",
+        "sfSchema"    -> "test-schema",
         "sfWarehouse" -> "test-warehouse",
         "sfRole"      -> "tester"
       )

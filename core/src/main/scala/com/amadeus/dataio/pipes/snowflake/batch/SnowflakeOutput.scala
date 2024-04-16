@@ -13,14 +13,13 @@ import org.apache.spark.sql.{Dataset, SparkSession}
  * @param config the config object.
  */
 case class SnowflakeOutput(
-                            mode: String,
-                            options: Map[String, String],
-                            config: Config = ConfigFactory.empty()
-                          ) extends Output
-  with Logging {
+    mode: String,
+    options: Map[String, String],
+    config: Config = ConfigFactory.empty()
+) extends Output
+    with Logging {
 
   val SNOWFLAKE_CONNECTOR_NAME = "net.snowflake.spark.snowflake"
-
 
   /**
    * Writes data to this output.
