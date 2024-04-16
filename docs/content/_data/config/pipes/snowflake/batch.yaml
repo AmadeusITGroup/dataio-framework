@@ -1,0 +1,12 @@
+input:
+  type: com.amadeus.dataio.pipes.snowflake.batch.SnowflakeInput
+
+
+output:
+  type: com.amadeus.dataio.pipes.snowflake.batch.SnowflakeOutput
+  fields:
+    - name: Mode
+      mandatory: Yes
+      description: Writing mode on the Snowflake table
+      example: Mode = "append"
+
