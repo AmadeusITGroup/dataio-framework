@@ -12,12 +12,5 @@ fields:
     description: Snowflake options to specify such as key = value pairs. These options are then passed as option to the Spark connector for Snowflake
     example: Options { Database = "example_database"
       Schema = "example_schema"
-      Table = "example_table"
-      Mode = "append"
-      User = "username"
-      Url = "account_address"
-      pem_private_key = "private_key"
-      sfWarehouse = "warehouse"
-      sfRole = "role"
-      column_mapping = "name"
+      ...
       }
