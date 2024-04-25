@@ -16,7 +16,8 @@ ThisBuild / libraryDependencies ++= Seq(
   // Spark
   "org.apache.spark" %% "spark-sql-kafka-0-10" % sparkVersion.value,
   "org.apache.spark" %% "spark-sql"            % sparkVersion.value,
-  "org.apache.spark" %% "spark-core"           % sparkVersion.value
+  "org.apache.spark" %% "spark-core"           % sparkVersion.value,
+  "net.snowflake"    %% "spark-snowflake"      % f"2.15.0-spark_3.4"
 )
 
 // Tests configuration

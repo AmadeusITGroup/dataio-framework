@@ -1,0 +1,16 @@
+name: Snowflake
+description: Allows the connection to Snowflake to automatically retrieve from or publish data to a Snowflake table.
+
+code_directory: snowflake
+
+links:
+  - name: Spark Snowflake API documentation
+    url: https://docs.snowflake.com/en/user-guide/spark-connector-use#using-the-connector-in-scala
+
+fields:
+  - name: Options
+    description: Snowflake options to specify such as key = value pairs. These options are then passed as option to the Spark connector for Snowflake
+    example: Options { Database = "example_database"
+      Schema = "example_schema"
+      ...
+      }
