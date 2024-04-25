@@ -21,7 +21,7 @@ import scala.util.Try
  */
 case class KafkaOutput(
     brokers: String,
-    topic: String,
+    topic: Option[String],
     trigger: Option[Trigger],
     timeout: Long,
     mode: String,
@@ -42,12 +42,17 @@ case class KafkaOutput(
 
     val queryName = createQueryName()
 
+    var fullOptions = options + ("kafka.bootstrap.servers" -> brokers)
+
+    fullOptions = topic match {
+      case Some(kafkaTopic) => options + ("topic" -> kafkaTopic)
+      case _                => options
+    }
+
     var streamWriter = data.writeStream
       .queryName(queryName)
       .format("kafka")
-      .option("kafka.bootstrap.servers", brokers)
-      .option("topic", topic)
-      .options(options)
+      .options(fullOptions)
       .outputMode(mode)
 
     streamWriter = trigger match {
@@ -68,9 +73,11 @@ case class KafkaOutput(
    */
   private[streaming] def createQueryName(): String = {
 
-    outputName match {
-      case Some(name) => s"QN_${name}_${topic}_${java.util.UUID.randomUUID}"
-      case _          => s"QN_${topic}_${java.util.UUID.randomUUID}"
+    (outputName, topic) match {
+      case (Some(name), Some(kafkaTopic)) => s"QN_${name}_${kafkaTopic}_${java.util.UUID.randomUUID}"
+      case (Some(name), None)             => s"QN_${name}_${java.util.UUID.randomUUID}"
+      case (None, Some(kafkaTopic))       => s"QN_${kafkaTopic}_${java.util.UUID.randomUUID}"
+      case _                              => s"QN_KafkaOutput_${java.util.UUID.randomUUID}"
     }
 
   }
@@ -89,10 +96,7 @@ object KafkaOutput {
    */
   def apply(implicit config: Config): KafkaOutput = {
     val brokers = getBroker
-    val topic = getTopic match {
-      case Some(topicToUse) if topicToUse.nonEmpty => topicToUse
-      case _                                       => throw new IllegalArgumentException("No topic specified for Kafka source")
-    }
+    val topic   = getTopic
 
     val trigger = getStreamingTrigger
 
