@@ -43,6 +43,6 @@ object ConfigNode {
 
     val name = Try(config.getString("Name")).getOrElse(s"$typeName-${randomUUID().toString}")
 
-    ConfigNode(name, typeName, config.withoutPath("Type").withoutPath("Name"))
+    ConfigNode(name, typeName, config.withoutPath("Type"))
   }
 }

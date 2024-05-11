@@ -5,7 +5,6 @@ import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.streaming.Trigger
 import org.apache.spark.sql.{Dataset, SparkSession}
 
-import scala.concurrent.duration.Duration
 import scala.util.Try
 
 /**
@@ -13,7 +12,7 @@ import scala.util.Try
  *
  * @param brokers brokers
  * @param topic topic
- * @param processingTimeTrigger processingTimeTrigger.
+ * @param trigger the trigger to be used for the streaming query.
  * @param timeout timeout in milliseconds.
  * @param mode mode.
  * @param options options
@@ -23,7 +22,7 @@ import scala.util.Try
 case class KafkaOutput(
     brokers: String,
     topic: Option[String],
-    processingTimeTrigger: Trigger,
+    trigger: Option[Trigger],
     timeout: Long,
     mode: String,
     options: Map[String, String] = Map(),
@@ -39,22 +38,29 @@ case class KafkaOutput(
    * @param spark The SparkSession which will be used to write the data.
    */
   def write[T](data: Dataset[T])(implicit spark: SparkSession): Unit = {
-    logger.info(s"Write dataframe to kafka [$topic]")
+    logger.info(s"Write dataframe to kafka [$topic] using trigger [$trigger]")
 
     val queryName = createQueryName()
 
-    val streamWriter = data.writeStream
+    var fullOptions = options + ("kafka.bootstrap.servers" -> brokers)
+
+    fullOptions = topic match {
+      case Some(kafkaTopic) => options + ("topic" -> kafkaTopic)
+      case _                => options
+    }
+
+    var streamWriter = data.writeStream
       .queryName(queryName)
       .format("kafka")
-      .options(options)
-      .option("kafka.bootstrap.servers", brokers)
+      .options(fullOptions)
       .outputMode(mode)
-      .trigger(processingTimeTrigger)
 
-    val streamingQuery = topic match {
-      case Some(t) => streamWriter.option("topic", t).start()
-      case _       => streamWriter.start()
+    streamWriter = trigger match {
+      case Some(trigger) => streamWriter.trigger(trigger)
+      case _             => streamWriter
     }
+
+    val streamingQuery = streamWriter.start()
 
     streamingQuery.awaitTermination(timeout)
     streamingQuery.stop()
@@ -68,10 +74,10 @@ case class KafkaOutput(
   private[streaming] def createQueryName(): String = {
 
     (outputName, topic) match {
-      case (Some(name), Some(t)) => s"QN_${name}_${t}_${java.util.UUID.randomUUID}"
-      case (Some(name), None)    => s"QN_${name}_${java.util.UUID.randomUUID}"
-      case (None, Some(t))       => s"QN_KafkaOutput_${t}_${java.util.UUID.randomUUID}"
-      case _                     => s"QN_KafkaOutput_${java.util.UUID.randomUUID}"
+      case (Some(name), Some(kafkaTopic)) => s"QN_${name}_${kafkaTopic}_${java.util.UUID.randomUUID}"
+      case (Some(name), None)             => s"QN_${name}_${java.util.UUID.randomUUID}"
+      case (None, Some(kafkaTopic))       => s"QN_${kafkaTopic}_${java.util.UUID.randomUUID}"
+      case _                              => s"QN_KafkaOutput_${java.util.UUID.randomUUID}"
     }
 
   }
@@ -92,8 +98,7 @@ object KafkaOutput {
     val brokers = getBroker
     val topic   = getTopic
 
-    val duration              = Duration(config.getString("Duration"))
-    val processingTimeTrigger = Trigger.ProcessingTime(duration)
+    val trigger = getStreamingTrigger
 
     val timeout = getTimeout
     val mode    = config.getString("Mode")
@@ -104,7 +109,7 @@ object KafkaOutput {
     KafkaOutput(
       brokers,
       topic,
-      processingTimeTrigger,
+      trigger,
       timeout,
       mode,
       options,
