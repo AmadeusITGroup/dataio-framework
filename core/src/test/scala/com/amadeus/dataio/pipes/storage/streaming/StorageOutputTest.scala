@@ -17,7 +17,7 @@ class StorageOutputTest extends AnyWordSpec with Matchers {
       val config = ConfigFactory.parseMap(
         Map(
           "Output" -> Map(
-            "Type"               -> "com.amadeus.dataio.pipes.storage.streaming.StorageOutput",
+            "Type"               -> "com.amadeus.dataio.output.streaming.StorageOutput",
             "Name"               -> "my-test-storage",
             "Path"               -> "output/fileStreamOutputConfigTest",
             "Format"             -> "delta",
@@ -40,8 +40,8 @@ class StorageOutputTest extends AnyWordSpec with Matchers {
       storageStreamOutput.format shouldEqual "delta"
       storageStreamOutput.path shouldEqual "output/fileStreamOutputConfigTest"
       storageStreamOutput.partitioningColumns shouldEqual Seq("upd_date", "version")
-      Option(storageStreamOutput.processingTimeTrigger) shouldNot be(None)
-      storageStreamOutput.processingTimeTrigger shouldEqual Trigger.ProcessingTime(Duration("60 seconds"))
+      Option(storageStreamOutput.trigger) shouldNot be(None)
+      storageStreamOutput.trigger shouldEqual Some(Trigger.ProcessingTime(Duration("60 seconds")))
       storageStreamOutput.timeout shouldEqual 86400000
       storageStreamOutput.mode shouldEqual "update"
       storageStreamOutput.options shouldEqual Map(
@@ -56,12 +56,13 @@ class StorageOutputTest extends AnyWordSpec with Matchers {
       val config = ConfigFactory.parseMap(
         Map(
           "Output" -> Map(
-            "Type"               -> "com.amadeus.dataio.pipes.storage.streaming.StorageOutput",
+            "Type"               -> "com.amadeus.dataio.output.streaming.StorageOutput",
             "Name"               -> "my-test-storage",
             "Path"               -> "output/fileStreamOutputConfigTest",
             "Format"             -> "delta",
             "PartitioningColumn" -> "upd_date,version",
             "Mode"               -> "update",
+            "Trigger"            -> "Continuous",
             "Duration"           -> "6 hours",
             "Timeout"            -> "24"
           )
@@ -73,8 +74,8 @@ class StorageOutputTest extends AnyWordSpec with Matchers {
       storageStreamOutput.format shouldEqual "delta"
       storageStreamOutput.path shouldEqual "output/fileStreamOutputConfigTest"
       storageStreamOutput.partitioningColumns shouldEqual Seq("upd_date", "version")
-      Option(storageStreamOutput.processingTimeTrigger) shouldNot be(None)
-      storageStreamOutput.processingTimeTrigger shouldEqual Trigger.ProcessingTime(Duration("6 hours"))
+      Option(storageStreamOutput.trigger) shouldNot be(None)
+      storageStreamOutput.trigger shouldEqual Some(Trigger.Continuous(Duration("6 hours")))
       storageStreamOutput.timeout shouldEqual 86400000
       storageStreamOutput.mode shouldEqual "update"
       storageStreamOutput.options shouldEqual Map()
@@ -90,7 +91,7 @@ class StorageOutputTest extends AnyWordSpec with Matchers {
             "Format"             -> "delta",
             "PartitioningColumn" -> "upd_date,version",
             "Mode"               -> "update",
-            "Duration"           -> "60 seconds",
+            "Trigger"            -> "AvailableNow",
             "Timeout"            -> "24",
             "Options" -> Map(
               "\"spark.sql.parquet.compression.codec\"" -> "snappy",
@@ -107,8 +108,45 @@ class StorageOutputTest extends AnyWordSpec with Matchers {
       storageStreamOutput.format shouldEqual "delta"
       storageStreamOutput.path shouldEqual "output/fileStreamOutputConfigTest"
       storageStreamOutput.partitioningColumns shouldEqual Seq("upd_date", "version")
-      Option(storageStreamOutput.processingTimeTrigger) shouldNot be(None)
-      storageStreamOutput.processingTimeTrigger shouldEqual Trigger.ProcessingTime(Duration("60 seconds"))
+      Option(storageStreamOutput.trigger) shouldNot be(None)
+      storageStreamOutput.trigger shouldEqual Some(Trigger.AvailableNow())
+      storageStreamOutput.timeout shouldEqual 86400000
+      storageStreamOutput.mode shouldEqual "update"
+      storageStreamOutput.options shouldEqual Map(
+        "spark.sql.parquet.compression.codec" -> "snappy",
+        "checkpointLocation"                  -> "maprfs://bktv001//test/checkpoint",
+        "mergeSchema"                         -> "true"
+      )
+    }
+
+    "be initialized according to configuration without Trigger" in {
+
+      val config = ConfigFactory.parseMap(
+        Map(
+          "Output" -> Map(
+            "Type"               -> "com.amadeus.dataio.output.streaming.StorageOutput",
+            "Path"               -> "output/fileStreamOutputConfigTest",
+            "Format"             -> "delta",
+            "PartitioningColumn" -> "upd_date,version",
+            "Mode"               -> "update",
+            "Timeout"            -> "24",
+            "Options" -> Map(
+              "\"spark.sql.parquet.compression.codec\"" -> "snappy",
+              "checkpointLocation"                      -> "maprfs://bktv001//test/checkpoint",
+              "mergeSchema"                             -> "true"
+            )
+          )
+        )
+      )
+
+      val storageStreamOutput = StorageOutput.apply(config.getConfig("Output"))
+
+      storageStreamOutput.outputName shouldEqual None
+      storageStreamOutput.format shouldEqual "delta"
+      storageStreamOutput.path shouldEqual "output/fileStreamOutputConfigTest"
+      storageStreamOutput.partitioningColumns shouldEqual Seq("upd_date", "version")
+      Option(storageStreamOutput.trigger) shouldNot be(None)
+      storageStreamOutput.trigger shouldEqual None
       storageStreamOutput.timeout shouldEqual 86400000
       storageStreamOutput.mode shouldEqual "update"
       storageStreamOutput.options shouldEqual Map(
@@ -128,7 +166,7 @@ class StorageOutputTest extends AnyWordSpec with Matchers {
       val directory = "testStreaming"
       val path      = "test" + File.separatorChar + directory
 
-      val storageOutput = StorageOutput(path = path, format = "format", partitioningColumns = Seq(""), processingTimeTrigger = null, timeout = 0L, mode = "", outputName = None)
+      val storageOutput = StorageOutput(path = path, format = "format", partitioningColumns = Seq(""), trigger = null, timeout = 0L, mode = "", outputName = None)
 
       val queryName = storageOutput.createQueryName()
 
@@ -141,7 +179,7 @@ class StorageOutputTest extends AnyWordSpec with Matchers {
       val path      = "test" + File.separatorChar + directory
 
       val storageOutput =
-        StorageOutput(path = path, format = "format", partitioningColumns = Seq(""), processingTimeTrigger = null, timeout = 0L, mode = "", outputName = Some("myTestOutput"))
+        StorageOutput(path = path, format = "format", partitioningColumns = Seq(""), trigger = null, timeout = 0L, mode = "", outputName = Some("myTestOutput"))
 
       val queryName = storageOutput.createQueryName()
 
@@ -150,7 +188,7 @@ class StorageOutputTest extends AnyWordSpec with Matchers {
 
     "return a query name based only on UUID" in {
 
-      val storageOutput = StorageOutput(path = null, format = "format", partitioningColumns = Seq(""), processingTimeTrigger = null, timeout = 0L, mode = "", outputName = None)
+      val storageOutput = StorageOutput(path = null, format = "format", partitioningColumns = Seq(""), trigger = null, timeout = 0L, mode = "", outputName = None)
 
       val queryName = storageOutput.createQueryName()
 

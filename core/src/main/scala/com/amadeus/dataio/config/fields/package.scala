@@ -14,3 +14,4 @@ package object fields
     with PartitionByConfigurator
     with TimeoutConfigurator
     with SchemaConfigurator
+    with StreamingTriggerConfigurator
