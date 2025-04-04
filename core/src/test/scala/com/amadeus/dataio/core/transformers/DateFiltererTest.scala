@@ -129,7 +129,6 @@ class DateFiltererTest extends SparkSpec with Matchers {
 
     // Create a date filterer with our range and column
     val filterer = DateFilterer[TestRecord](Some(dateRange), Some(col("eventDate")))
-    println(dateRange)
     // Apply filter
     val filtered = filterer(testDs)
 

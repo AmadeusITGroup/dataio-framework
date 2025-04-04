@@ -5,8 +5,10 @@ ThisBuild / scalaVersion := "2.12.15"
 
 val scalatestVersion      = "3.2.15"
 val scalamockVersion      = "5.2.0"
-val sparkVersion          = "3.4.1"
+val sparkVersion          = "3.5.0"
 val typesafeConfigVersion = "1.4.3"
+val slf4jApiVersion       = "2.0.7"
+val commonsIoVersion      = "2.13.0"
 
 // RELEASE SETUP
 import sbt.Keys.libraryDependencies
@@ -115,9 +117,8 @@ lazy val core = (project in file("core"))
     commonSettings,
     name := "dataio-core",
     libraryDependencies ++= Seq(
-      "org.apache.logging.log4j"  % "log4j-api"       % "2.19.0",
-      "org.apache.logging.log4j" %% "log4j-api-scala" % "12.0",
-      "commons-io"                % "commons-io"      % "2.11.0"
+      "org.slf4j"  % "slf4j-api"  % slf4jApiVersion,
+      "commons-io" % "commons-io" % commonsIoVersion
     )
   )
   .dependsOn(testutils)

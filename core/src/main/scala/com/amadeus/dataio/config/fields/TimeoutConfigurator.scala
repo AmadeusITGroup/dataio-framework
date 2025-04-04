@@ -17,7 +17,6 @@ trait TimeoutConfigurator {
     */
   def getTimeout(implicit config: Config): Option[Long] = {
     Try {
-      println(config.getString("timeout"))
       Duration(config.getString("timeout")).toMillis
     }.toOption
   }

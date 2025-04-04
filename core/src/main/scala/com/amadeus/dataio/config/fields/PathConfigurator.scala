@@ -68,8 +68,6 @@ trait PathConfigurator {
       val formatter = DateTimeFormatter.ofPattern(pattern)
       val fromDate  = dateRange.from.format(formatter)
 
-      println(s"trying: $referenceDate")
-      println(s"trying: $dateRange")
       template.replace("%{from}", fromDate)
     } match {
       case Failure(e) =>
