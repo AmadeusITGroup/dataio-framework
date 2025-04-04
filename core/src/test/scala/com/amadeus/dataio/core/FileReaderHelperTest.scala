@@ -8,7 +8,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import java.io.FileNotFoundException
 
 class FileReaderHelperTest extends AnyWordSpec with Matchers with FileSystemSuite {
-  lazy val inputPath: String = getClass.getResource("/core/file_reader_helper/input.csv").getPath
+  lazy val inputPath: String = getClass.getResource("/core/FileReaderHelper/input.csv").getPath
 
   val inputContent: String = """date;from;to
                        |2021-08-19;Paris;Vienna
@@ -43,7 +43,7 @@ class FileReaderHelperTest extends AnyWordSpec with Matchers with FileSystemSuit
 
     "given the path of a file which does not exist" should {
       "throw a FileNotFoundException" in {
-        a[FileNotFoundException] shouldBe thrownBy(FileReaderHelper.toString("/core/file_reader_helper/notFound.csv", fs))
+        a[FileNotFoundException] shouldBe thrownBy(FileReaderHelper.toString("/core/FileReaderHelper/not_found.csv", fs))
       }
     }
 
@@ -59,7 +59,7 @@ class FileReaderHelperTest extends AnyWordSpec with Matchers with FileSystemSuit
   "toZipByteArray" when {
     "given a proper path and filesystem" should {
       "return an Array[Byte] smaller than toByteArray" in {
-        val inputToZipPath = getClass.getResource("/core/file_reader_helper/input_to_zip.csv").getPath
+        val inputToZipPath = getClass.getResource("/core/FileReaderHelper/input_to_zip.csv").getPath
         val bytes          = FileReaderHelper.toByteArray(inputToZipPath, fs)
         val zippedBytes    = FileReaderHelper.toZipByteArray(inputToZipPath, fs)
 
@@ -83,7 +83,7 @@ class FileReaderHelperTest extends AnyWordSpec with Matchers with FileSystemSuit
    * @param func A function expecting a path String as argument.
    */
   def assertFileNotFound(func: (String, FileSystem) => AnyRef): Unit = {
-    a[FileNotFoundException] shouldBe thrownBy(func("/core/file_reader_helper/notFound.csv", fs))
+    a[FileNotFoundException] shouldBe thrownBy(func("/core/FileReaderHelper/notFound.csv", fs))
   }
 
   /**

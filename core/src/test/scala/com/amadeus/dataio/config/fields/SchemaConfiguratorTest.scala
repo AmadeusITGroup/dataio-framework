@@ -1,33 +1,32 @@
 package com.amadeus.dataio.config.fields
 
-import com.amadeus.dataio.testutils.JavaImplicitConverters._
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
+import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 
-import scala.util.Try
+class SchemaConfiguratorTest extends AnyFlatSpec with Matchers {
 
-class SchemaConfiguratorTest extends AnyWordSpec with Matchers {
+  behavior of "getSchema"
 
-  "getSchema" should {
-    "return the schema fully qualified name" when {
+  it should "return schema name when it exists in config" in {
+    val configStr =
+      """
+       schema = "com.example.MySchema"
+     """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-      "given schema" in {
-        val config = ConfigFactory.parseMap(
-          Map("Schema" -> "com.example.Test")
-        )
+    val result = getSchema
+    result should be(Some("com.example.MySchema"))
+  }
 
-        getSchema(config) shouldEqual "com.example.Test"
-      }
-    }
+  it should "return None when schema doesn't exist in config" in {
+    val configStr =
+      """
+       some_other_config = "value"
+     """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-    "return none" when {
-
-      "given no schema" in {
-        val config = ConfigFactory.parseMap(Map[String, String]())
-
-        Try(getSchema(config)).toOption shouldEqual None
-      }
-    }
+    val result = getSchema
+    result should be(None)
   }
 }

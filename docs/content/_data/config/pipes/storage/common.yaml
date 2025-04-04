@@ -1,7 +1,7 @@
-name: storage
+name: spark
 description: Allows the use of the default Spark file system interactions in batch and streaming.
 
-code_directory: storage
+code_directory: spark
 
 links:
   - name: Schema definition

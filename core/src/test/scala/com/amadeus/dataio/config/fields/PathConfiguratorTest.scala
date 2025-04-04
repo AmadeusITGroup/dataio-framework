@@ -1,203 +1,220 @@
 package com.amadeus.dataio.config.fields
 
-import com.amadeus.dataio.testutils.JavaImplicitConverters._
-import com.typesafe.config.{ConfigException, ConfigFactory}
+import com.amadeus.dataio.core.time.DateRange
+import com.amadeus.dataio.testutils.ConfigCreator
+import com.typesafe.config.Config
+import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import scala.util.Try
+import java.util.UUID
 
-class PathConfiguratorTest extends AnyWordSpec with Matchers {
-  "getPath" should {
-    "return file.csv" when {
-      "given Path = file.csv" in {
-        val config = ConfigFactory.parseMap(
-          Map("Path" -> "file.csv")
-        )
-        getPath(config) shouldBe "file.csv"
-      }
+class PathConfiguratorTest extends AnyFlatSpec with ConfigCreator with Matchers {
+  behavior of "getPath"
+  it should "return None when no path configuration is provided" in {
+    implicit val config: Config = createConfig("""{}""")
 
-      "given Path{ Template = file.csv }" in {
-        val config = ConfigFactory.parseMap(
-          Map("Path" -> Map("Template" -> "file.csv"))
-        )
-        getPath(config) shouldBe "file.csv"
-      }
-    }
+    getPath shouldBe None
+  }
 
-    "return file_20220101.csv" when {
-      "given Path{ Date = 2022-01-01 , DateOffset = +5D, Template = file_%{from}.csv }" in {
-        val config = ConfigFactory.parseMap(
-          Map("Path" -> Map("Date" -> "2022-01-01", "DateOffset" -> "+5D", "Template" -> "file_%{from}.csv", "DatePattern" -> "yyyyMMdd"))
-        )
-        getPath(config) shouldBe "file_20220101.csv"
-      }
-    }
-
-    "return file_20220106.csv" when {
-      "given Path{ Date = 2022-01-01 , DateOffset = +5D, Template = file_%{to}.csv }" in {
-        val config = ConfigFactory.parseMap(
-          Map("Path" -> Map("Date" -> "2022-01-01", "DateOffset" -> "+5D", "Template" -> "file_%{to}.csv", "DatePattern" -> "yyyyMMdd"))
-        )
-        getPath(config) shouldBe "file_20220106.csv"
-      }
-    }
-
-    "return file_<datetime>.csv with format yyyyMMdd-hhmmss" when {
-      val expectedFileNamePattern = "^file_\\d{8}-\\d{6}\\.csv$".r
-      val dateTimePattern         = "\\d{8}-\\d{6}".r
-      val dateFormatter           = DateTimeFormatter.ofPattern("yyyyMMdd-hhmmss")
-
-      "given Path = file_%{datetime}.csv" in {
-        val config = ConfigFactory.parseMap(
-          Map("Path" -> Map("Template" -> "file_%{datetime}.csv", "DatePattern" -> "yyyyMMdd-hhmmss"))
-        )
-        val resultFileName = getPath(config)
-
-        (expectedFileNamePattern findAllIn resultFileName).size shouldBe 1
-
-        val foundDateTime = dateTimePattern findFirstIn resultFileName
-        Try(dateFormatter.parse(foundDateTime.get)).isSuccess shouldBe true
-      }
-
-      "given Path { Template = file_%{datetime}.csv }" in {
-        val config = ConfigFactory.parseMap(
-          Map("Path" -> Map("Template" -> "file_%{datetime}.csv", "DatePattern" -> "yyyyMMdd-hhmmss"))
-        )
-        val resultFileName = getPath(config)
-
-        val foundDateTime = dateTimePattern findFirstIn resultFileName
-        Try(dateFormatter.parse(foundDateTime.get)).isSuccess shouldBe true
-      }
-
-      "given Path { Template = file_%{datetime}.csv and a fixed date }" in {
-        val config = ConfigFactory.parseMap(
-          Map("Path" -> Map("Template" -> "file_%{datetime}.csv", "Date" -> "2022-10-21 +1D",  "DatePattern" -> "yyyyMMdd-hhmmss"))
-        )
-        val resultFileName = getPath(config)
-
-        val foundDateTime = dateTimePattern findFirstIn resultFileName
-        Try(dateFormatter.parse(foundDateTime.get)).isSuccess shouldBe true
-      }
-    }
-
-    "return file_<uuid>.csv" when {
-      val expectedFileNamePattern = "^file_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\.csv$".r
-
-      "given Path = file_%{uuid}.csv" in {
-        val config = ConfigFactory.parseMap(
-          Map("Path" -> Map("Template" -> "file_%{uuid}.csv"))
-        )
-        val resultFileName = getPath(config)
-        (expectedFileNamePattern findAllIn resultFileName).size shouldBe 1
-      }
-
-      "given Path{ Template = file_%{uuid}.csv }" in {
-        val config = ConfigFactory.parseMap(
-          Map("Path" -> Map("Template" -> "file_%{uuid}.csv"))
-        )
-        val resultFileName = getPath(config)
-        (expectedFileNamePattern findAllIn resultFileName).size shouldBe 1
-      }
-    }
-
-    "return detemplatized file name" when {
-      "given a date with month and day < 10" in {
-        val config = ConfigFactory.parseMap(
-          Map("Path" -> Map("Template" -> "file_%{year}_%{month}_%{day}.csv", "Date" -> "2022-09-09", "DatePattern" -> "yyyy-MM-dd"))
-        )
-        getPath(config) shouldBe "file_2022_09_09.csv"
-      }
-
-      "given a date with month and day > 10" in {
-        val config = ConfigFactory.parseMap(
-          Map("Path" -> Map("Template" -> "file_%{year}_%{month}_%{day}.csv", "Date" -> "2022-10-23", "DatePattern" -> "yyyy-MM-dd"))
-        )
-        getPath(config) shouldBe "file_2022_10_23.csv"
-      }
-
-      "given a date with a non-standard pattern" in {
-        val config = ConfigFactory.parseMap(
-          Map("Path" -> Map("Template" -> "file_%{year}_%{month}_%{day}.csv", "Date" -> "20220909", "DatePattern" -> "yyyyMMdd"))
-        )
-        getPath(config) shouldBe "file_2022_09_09.csv"
-      }
-
-      "given a date that only needs to match the year" in {
-        val config = ConfigFactory.parseMap(
-          Map("Path" -> Map("Template" -> "file_%{year}.csv", "Date" -> "2022-10-23", "DatePattern" -> "yyyy-MM-dd"))
-        )
-        getPath(config) shouldBe "file_2022.csv"
-      }
-      /*
-      "given a date without an explicit DatePattern" in {
-        val config = ConfigFactory.parseMap(
-          Map("Path" -> Map("Template" -> "file_%{year}_%{month}_%{day}.csv", "Date" -> "2022-10-23"))
-        )
-        getPath(config) shouldBe "file_2022_10_23.csv"
-      }
-       */
-    }
-
-    "throw a ConfigException" when {
-      "given a Config without Path" in {
-        intercept[ConfigException] {
-          val config = ConfigFactory.empty()
-
-          getOptions(config)
+  it should "return a simple path when defined directly" in {
+    implicit val config: Config = createConfig(
+      """
+        {
+          path = "/data/simple/path"
         }
-      }
+        """
+    )
 
-      "given a Config without Template if Path is an object" in {
-        intercept[ConfigException] {
-          val config = ConfigFactory.parseMap(
-            Map("Path" -> Map.empty)
-          )
+    getPath shouldBe Some("/data/simple/path")
+  }
 
-          getOptions(config)
+  it should "resolve a template with %{from} placeholder" in {
+    implicit val config: Config = createConfig(
+      """
+        {
+          path.template = "/data/%{from}/files"
+          path.date_reference = "2025-01-01"
+          path.date_offset = "+30D"
+          path.date_pattern = "yyyy-MM-dd"
         }
-      }
+        """
+    )
 
-      "given a Config without Date if trying to use %{from}" in {
-        intercept[ConfigException] {
-          val config = ConfigFactory.parseMap(
-            Map("Path" -> Map("Template" -> "file_%{from}.csv", "DateOffset" -> "+5D"))
-          )
-
-          getOptions(config)
-        }
-      }
-
-      "given a Config without DateOffset if trying to use %{from}" in {
-        intercept[ConfigException] {
-          val config = ConfigFactory.parseMap(
-            Map("Path" -> Map("Template" -> "file_%{from}.csv", "Date" -> "2022-01-01"))
-          )
-
-          getOptions(config)
-        }
-      }
-
-      "given a Config without Date if trying to use %{to}" in {
-        intercept[ConfigException] {
-          val config = ConfigFactory.parseMap(
-            Map("Path" -> Map("Template" -> "file_%{to}.csv", "DateOffset" -> "+5D"))
-          )
-
-          getOptions(config)
-        }
-      }
-
-      "given a Config without DateOffset if trying to use %{to}" in {
-        intercept[ConfigException] {
-          val config = ConfigFactory.parseMap(
-            Map("Path" -> Map("Template" -> "file_%{to}.csv", "Date" -> "2022-01-01"))
-          )
-
-          getOptions(config)
-        }
-      }
+    val expected = {
+      val dateRange = DateRange("2025-01-01", "+30D")
+      val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+      val fromDate  = dateRange.from.format(formatter)
+      s"/data/$fromDate/files"
     }
+
+    getPath shouldBe Some(expected)
+  }
+
+  it should "resolve a template with %{to} placeholder" in {
+    implicit val config: Config = createConfig(
+      """
+        {
+          path.template = "/data/%{to}/files"
+          path.date_reference = "2025-01-01"
+          path.date_offset = "+30D"
+          path.date_pattern = "yyyy-MM-dd"
+        }
+        """
+    )
+
+    val expected = {
+      val dateRange = DateRange("2025-01-01", "+30D")
+      val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+      val toDate    = dateRange.until.format(formatter)
+      s"/data/$toDate/files"
+    }
+
+    getPath shouldBe Some(expected)
+  }
+
+  it should "resolve a template with %{date} placeholder" in {
+    implicit val config: Config = createConfig(
+      """
+        {
+          path.template = "/data/%{date}/files"
+          path.date = "2025-01-15"
+          path.date_pattern = "yyyyMMdd"
+        }
+        """
+    )
+
+    // Expected format from the parseDateAsString method
+    val expected = "/data/20250115/files"
+
+    getPath.get should be(expected)
+  }
+
+  it should "resolve a template with %{uuid} placeholder" in {
+    implicit val config: Config = createConfig(
+      """
+        {
+          path.template = "/data/%{uuid}/files"
+        }
+        """
+    )
+
+    val path = getPath.get
+    path should startWith("/data/")
+    path should endWith("/files")
+
+    // Extract the UUID part and verify it's a valid UUID
+    val uuidPattern       = "/data/([^/]+)/files".r
+    val uuidPattern(uuid) = path
+    noException should be thrownBy UUID.fromString(uuid)
+  }
+
+  it should "resolve a template with %{year}, %{month}, %{day} placeholders" in {
+    implicit val config: Config = createConfig(
+      """
+        {
+          path.template = "/data/%{year}/%{month}/%{day}/files"
+          path.date = "2025-03-15"
+        }
+        """
+    )
+
+    val expected = "/data/2025/03/15/files"
+    getPath shouldBe Some(expected)
+  }
+
+  it should "handle multiple placeholders in one template" in {
+    implicit val config: Config = createConfig(
+      """
+        {
+          path.template = "/data/%{year}/%{month}/from_%{from}_to_%{to}/%{uuid}"
+          path.date = "2025-03-15"
+          path.date_reference = "2025-01-01"
+          path.date_offset = "+30D"
+          path.date_pattern = "yyyyMMdd"
+        }
+        """
+    )
+
+    val path = getPath.get
+
+    // Check year, month portions
+    path should startWith("/data/2025/03/from_")
+
+    // Extract the UUID and verify it's valid
+    val lastSegment = path.split("/").last
+    noException should be thrownBy UUID.fromString(lastSegment)
+
+    // Verify the from/to dates are in the format
+    val dateRange = DateRange("2025-01-01", "+30D")
+    val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+    val fromDate  = dateRange.from.format(formatter)
+    val toDate    = dateRange.until.format(formatter)
+
+    path should include(s"from_${fromDate}_to_${toDate}")
+  }
+
+  it should "use current date when path.date is not specified" in {
+    implicit val config: Config = createConfig(
+      """
+        {
+          path.template = "/data/%{year}/%{month}/%{day}/files"
+        }
+        """
+    )
+
+    // Extract the year, month, day from the generated path
+    val path                      = getPath.get
+    val pattern                   = "/data/(\\d{4})/(\\d{2})/(\\d{2})/files".r
+    val pattern(year, month, day) = path
+
+    // Get the current date for comparison
+    val now = LocalDateTime.now()
+
+    // Verify the path uses today's date (allowing for timezone differences)
+    year should be(now.getYear.toString)
+    month.toInt should be >= (now.getMonthValue - 1)
+    month.toInt should be <= (now.getMonthValue + 1)
+    day.toInt should be >= (if (now.getDayOfMonth > 2) now.getDayOfMonth - 2 else 1)
+    day.toInt should be <= (if (now.getDayOfMonth < 29) now.getDayOfMonth + 2 else 31)
+  }
+
+  it should "use the default date format when pattern not specified" in {
+    implicit val config: Config = createConfig(
+      """
+        {
+          path.template = "/data/%{date}/files"
+          path.date = "2025-01-15"
+        }
+        """
+    )
+
+    val path = getPath.get
+    path should startWith("/data/")
+    path should endWith("/files")
+
+    path should include("20250115")
+  }
+
+  it should "handle negative date offsets" in {
+    implicit val config: Config = createConfig(
+      """
+        {
+          path.template = "/data/%{from}_%{to}/files"
+          path.date_reference = "2025-01-15"
+          path.date_offset = "-7D"
+          path.date_pattern = "yyyyMMdd"
+        }
+        """
+    )
+
+    val dateRange = DateRange("2025-01-15", "-7D")
+    val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+    val fromDate  = dateRange.from.format(formatter)
+    val toDate    = dateRange.until.format(formatter)
+
+    val expected = s"/data/${fromDate}_${toDate}/files"
+    getPath shouldBe Some(expected)
   }
 }

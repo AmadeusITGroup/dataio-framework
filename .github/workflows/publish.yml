@@ -3,10 +3,13 @@ name: Publish
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version to publish (SemVer)'
-        type: string
-        required: true
+      release_type:
+        type: choice
+        description: The type of release to publish. See SemVer 2.0.0.
+        options:
+          - PATCH
+          - MINOR
+          - MAJOR
 
 jobs:
   publish:
@@ -14,18 +17,23 @@ jobs:
     permissions:
       contents: write
     env:
-      VERSION: ${{ inputs.version }}
       GITHUB_REGISTRY_TOKEN: ${{ secrets.TOKEN }}
-    steps: 
-    - uses: actions/checkout@v4
-    - run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-    - uses: actions/setup-java@v3
-      with:
-        java-version: 8
-        distribution: "temurin"
-        cache: "sbt"
-    - run: sbt "release release-version ${VERSION} with-defaults"
+      RELEASE_TYPE: ${{ inputs.release_type }}
+    steps:
+      - uses: actions/checkout@v4
 
-run-name: ${{ format('Publishing version {0}', inputs.version) }}
+      - name: Set up Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - uses: actions/setup-java@v3
+        with:
+          java-version: 8
+          distribution: "temurin"
+          cache: "sbt"
+
+      - name: Run SBT release
+        run: sbt release with-defaults
+
+run-name: ${{ format('Publishing new version - {0}', inputs.release_type) }}

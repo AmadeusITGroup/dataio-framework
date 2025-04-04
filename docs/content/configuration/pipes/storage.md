@@ -1,11 +1,11 @@
 ---
-title: File system storage
+title: Spark
 layout: default
 grand_parent: Configuration
 parent: Pipes
 nav_order: 1
 ---
-# File System Storage
+# Spark
 
 {% include pipe_description.md pipe=site.data.config.pipes.storage %}
 

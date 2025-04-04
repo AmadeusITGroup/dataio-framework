@@ -1,52 +1,53 @@
 package com.amadeus.dataio.config.fields
 
-import com.amadeus.dataio.testutils.JavaImplicitConverters._
-import com.typesafe.config.{ConfigException, ConfigFactory}
+import com.typesafe.config.{Config, ConfigFactory}
+import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 
-class RepartitionByRangeConfiguratorTest extends AnyWordSpec with Matchers {
-  "getRepartitionByRangeNumber" should {
-    "return 5" when {
-      "given RepartitionByRange{ Number = 5 }" in {
-        val config = ConfigFactory.parseMap(
-          Map("RepartitionByRange" -> Map("Number" -> 5))
-        )
+class RepartitionByRangeConfiguratorTest extends AnyFlatSpec with Matchers {
+  behavior of "getRepartitionByRangeNum"
+  it should "return number when it exists in config" in {
+    val configStr =
+      """
+       repartition_by_range.num = 42
+     """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-        getRepartitionByRangeNumber(config) shouldBe 5
-      }
-    }
-
-    "throw a ConfigException" when {
-      "given a Config without RepartitionByRange.Number" in {
-        intercept[ConfigException] {
-          val config = ConfigFactory.empty()
-
-          getRepartitionByRangeNumber(config)
-        }
-      }
-    }
+    val result = getRepartitionByRangeNum
+    result should be(Some(42))
   }
 
-  "getRepartitionByRangeColumn" should {
-    "return colName" when {
-      "given RepartitionByRange{ Column = colName }" in {
-        val config = ConfigFactory.parseMap(
-          Map("RepartitionByRange" -> Map("Column" -> "colName"))
-        )
+  it should "return None when number doesn't exist in config" in {
+    val configStr =
+      """
+       some_other_config = "value"
+     """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-        getRepartitionByRangeColumn(config) shouldBe "colName"
-      }
-    }
+    val result = getRepartitionByRangeNum
+    result should be(None)
+  }
 
-    "throw a ConfigException" when {
-      "given a Config without RepartitionByRange.Column" in {
-        intercept[ConfigException] {
-          val config = ConfigFactory.empty()
+  behavior of "getRepartitionByRangeExprs"
+  it should "return expressions when they exist in config" in {
+    val configStr =
+      """
+       repartition_by_range.exprs = "id, timestamp"
+     """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-          getRepartitionByRangeColumn(config)
-        }
-      }
-    }
+    val result = getRepartitionByRangeExprs
+    result should be(Some("id, timestamp"))
+  }
+
+  it should "return None when expressions don't exist in config" in {
+    val configStr =
+      """
+       some_other_config = "value"
+     """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
+
+    val result = getRepartitionByRangeExprs
+    result should be(None)
   }
 }

@@ -5,17 +5,21 @@ import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.functions.col
 
 trait Repartitioner extends Logging {
-  val repartitionNumber: Option[Int]
-  val repartitionColumn: Option[String]
+  val repartitionNum: Option[Int]
+  val repartitionExprs: Option[String]
 
   def applyRepartition[T](ds: Dataset[T]): Dataset[T] = {
-    logger.info(s"Repartition number: $repartitionNumber, using column: $repartitionColumn.")
-
-    (repartitionColumn, repartitionNumber) match {
-      case (Some(column), Some(number)) => ds.repartition(number, col(column))
-      case (None, Some(number))         => ds.repartition(number)
-      case (Some(column), None)         => ds.repartition(col(column))
-      case (None, None)                 => ds
+    (repartitionExprs, repartitionNum) match {
+      case (Some(exprs), Some(num)) =>
+        logger.info(s"repartition: num=$num, exprs=$exprs")
+        ds.repartition(num, col(exprs))
+      case (None, Some(num)) =>
+        logger.info(s"repartition: $num")
+        ds.repartition(num)
+      case (Some(exprs), None) =>
+        logger.info(s"repartition: $exprs")
+        ds.repartition(col(exprs))
+      case (None, None) => ds
     }
   }
 }
@@ -23,8 +27,8 @@ trait Repartitioner extends Logging {
 object Repartitioner {
   def apply[T](number: Option[Int], column: Option[String]): Dataset[T] => Dataset[T] = {
     new Repartitioner {
-      override val repartitionNumber: Option[Int]    = number
-      override val repartitionColumn: Option[String] = column
+      override val repartitionNum: Option[Int]      = number
+      override val repartitionExprs: Option[String] = column
     }.applyRepartition
   }
 }

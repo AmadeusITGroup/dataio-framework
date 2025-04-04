@@ -58,6 +58,7 @@ class HandlerTest extends AnyWordSpec with Matchers with MockFactory {
 
       "return the entity's config object when getConfig is invoked with an existing name" in {
         val entity = new ConfigurableEntity {
+          override val name: String   = "entity"
           override val config: Config = ConfigFactory.parseMap(Map("EntityField" -> "EntityValue"))
         }
         handler.add("fourth", entity)

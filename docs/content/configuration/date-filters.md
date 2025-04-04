@@ -38,7 +38,7 @@ Here's an example of input using the DateFilter:
 (...)
 
 Input {
-    Type = "com.amadeus.dataio.pipes.storage.batch.StorageInput"
+    Type = "com.amadeus.dataio.pipes.spark.batch.SparkInput"
     Format = "delta"
     Path = "hdfs://path/to/data"
     DateFilter {

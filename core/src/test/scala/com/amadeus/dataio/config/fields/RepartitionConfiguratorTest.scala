@@ -1,68 +1,53 @@
 package com.amadeus.dataio.config.fields
 
-import com.amadeus.dataio.testutils.JavaImplicitConverters._
-import com.typesafe.config.{ConfigException, ConfigFactory}
+import com.typesafe.config.{Config, ConfigFactory}
+import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 
-class RepartitionConfiguratorTest extends AnyWordSpec with Matchers {
-  "getRepartitionNumber" should {
-    "return 5" when {
-      "given RepartitioningNumber = 5" in {
-        val config = ConfigFactory.parseMap(
-          Map("RepartitioningNumber" -> 5)
-        )
+class RepartitionConfiguratorTest extends AnyFlatSpec with Matchers {
+  behavior of "getRepartitionNum"
+  "getRepartitionNum" should "return number when it exists in config" in {
+    val configStr =
+      """
+        repartition.num = 42
+      """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-        getRepartitionNumber(config) shouldBe 5
-      }
-
-      "given Repartition{ Number = 5 }" in {
-        val config = ConfigFactory.parseMap(
-          Map("Repartition" -> Map("Number" -> 5))
-        )
-
-        getRepartitionNumber(config) shouldBe 5
-      }
-    }
-
-    "throw a ConfigException" when {
-      "given a Config without RepartitioningNumber or Repartition.Number" in {
-        intercept[ConfigException] {
-          val config = ConfigFactory.empty()
-
-          getRepartitionNumber(config)
-        }
-      }
-    }
+    val result = getRepartitionNum
+    result should be(Some(42))
   }
 
-  "getRepartitionColumn" should {
-    "return colName" when {
-      "given RepartitioningColumn = colName" in {
-        val config = ConfigFactory.parseMap(
-          Map("RepartitioningColumn" -> "colName")
-        )
+  it should "return None when number doesn't exist in config" in {
+    val configStr =
+      """
+        some_other_config = "value"
+      """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-        getRepartitionColumn(config) shouldBe "colName"
-      }
+    val result = getRepartitionNum
+    result should be(None)
+  }
 
-      "given Repartition{ Column = colName }" in {
-        val config = ConfigFactory.parseMap(
-          Map("Repartition" -> Map("Column" -> "colName"))
-        )
+  behavior of "getRepartitionExprs"
+  it should "return expressions when they exist in config" in {
+    val configStr =
+      """
+        repartition.exprs = "id, timestamp"
+      """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-        getRepartitionColumn(config) shouldBe "colName"
-      }
-    }
+    val result = getRepartitionExprs
+    result should be(Some("id, timestamp"))
+  }
 
-    "throw a ConfigException" when {
-      "given a Config without RepartitioningColumn or Repartition.Column" in {
-        intercept[ConfigException] {
-          val config = ConfigFactory.empty()
+  it should "return None when expressions don't exist in config" in {
+    val configStr =
+      """
+        some_other_config = "value"
+      """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-          getRepartitionColumn(config)
-        }
-      }
-    }
+    val result = getRepartitionExprs
+    result should be(None)
   }
 }

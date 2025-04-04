@@ -77,7 +77,7 @@ Processing {
  
 Input {
     Name = "my-input"
-    Type = "com.amadeus.dataio.pipes.storage.batch.StorageInput"
+    Type = "com.amadeus.dataio.pipes.spark.batch.SparkInput"
     Path = "/path/my-input"
     Format = "csv"
     Options {
@@ -87,7 +87,7 @@ Input {
  
 Output {
     Name = "my-output"
-    Type = "com.amadeus.dataio.pipes.storage.batch.StorageOutput"
+    Type = "com.amadeus.dataio.pipes.spark.batch.SparkOutput"
     Path = "/path/my-output"
     Format = "parquet"
 }

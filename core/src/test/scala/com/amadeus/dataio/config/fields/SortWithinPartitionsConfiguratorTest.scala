@@ -1,45 +1,44 @@
 package com.amadeus.dataio.config.fields
 
 import com.amadeus.dataio.testutils.JavaImplicitConverters._
-import com.typesafe.config.{ConfigException, ConfigFactory}
+import com.typesafe.config.{Config, ConfigException, ConfigFactory}
+import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class SortWithinPartitionsConfiguratorTest extends AnyWordSpec with Matchers {
-  "getSortWithinPartitionsColumns" should {
-    "return Seq(col, col2, col3)" when {
-      val expectedColumnNames = Seq("col1", "col2", "col3")
+class SortWithinPartitionsConfiguratorTest extends AnyFlatSpec with Matchers {
+  behavior of "getSortWithinPartitionsExprs"
 
-      "given SortWithinPartitions{ Columns = col1, col2, col3 }" in {
-        val config = ConfigFactory.parseMap(
-          Map("SortWithinPartitions" -> Map("Columns" -> "col1, col2, col3"))
-        )
-        getSortWithinPartitionsColumns(config) should contain theSameElementsAs expectedColumnNames
-      }
+  it should "parse comma-separated string values" in {
+    val configStr =
+      """
+        sort_within_partitions.exprs = "id, timestamp, value"
+      """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-      "given SortWithinPartitions{ Columns = [col1, col2, col3] }" in {
-        val config = ConfigFactory.parseMap(
-          Map("SortWithinPartitions" -> Map("Columns" -> Seq("col1", "col2", "col3")))
-        )
-        getSortWithinPartitionsColumns(config) should contain theSameElementsAs expectedColumnNames
-      }
+    val result = getSortWithinPartitionsExprs
+    result should be(Seq("id", "timestamp", "value"))
+  }
 
-      "given SortWithinPartitionColumn = col1, col2, col3" in {
-        val config = ConfigFactory.parseMap(
-          Map("SortWithinPartitionColumn" -> "col1, col2, col3")
-        )
-        getSortWithinPartitionsColumns(config) should contain theSameElementsAs expectedColumnNames
-      }
-    }
+  it should "parse string list values" in {
+    val configStr =
+      """
+        sort_within_partitions.exprs = ["id", "timestamp", "value"]
+      """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-    "throw a ConfigException" when {
-      "given a Config without SortWithinPartitions.Columns or SortWithinPartitionColumn" in {
-        intercept[ConfigException] {
-          val config = ConfigFactory.empty()
+    val result = getSortWithinPartitionsExprs
+    result should be(Seq("id", "timestamp", "value"))
+  }
 
-          getSortWithinPartitionsColumns(config)
-        }
-      }
-    }
+  it should "return empty sequence when expressions don't exist" in {
+    val configStr =
+      """
+        some_other_config = "value"
+      """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
+
+    val result = getSortWithinPartitionsExprs
+    result should be(Seq())
   }
 }

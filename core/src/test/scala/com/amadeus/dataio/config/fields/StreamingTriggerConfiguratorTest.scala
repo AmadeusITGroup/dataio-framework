@@ -1,80 +1,71 @@
 package com.amadeus.dataio.config.fields
 
-import com.amadeus.dataio.testutils.JavaImplicitConverters._
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.streaming.Trigger
+import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 
 import scala.concurrent.duration.Duration
 
-class StreamingTriggerConfiguratorTest extends AnyWordSpec with Matchers {
+class StreamingTriggerConfiguratorTest extends AnyFlatSpec with Matchers {
 
-  "getStreamingTrigger" should {
+  behavior of "getStreamingTrigger"
+  "getStreamingTrigger" should "return AvailableNow trigger when configured" in {
+    val configStr =
+      """
+       trigger = "AvailableNow"
+     """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-    "return AvailableNow trigger given AvailableNow configuration without Duration" in {
-      val config = ConfigFactory.parseMap(
-        Map("Trigger" -> "AvailableNow")
-      )
+    val result = getStreamingTrigger
+    result.get shouldEqual Trigger.AvailableNow()
+  }
 
-      val result = getStreamingTrigger(config)
-      result shouldEqual Some(Trigger.AvailableNow())
-    }
+  it should "return Continuous trigger when configured with duration" in {
+    val configStr =
+      """
+       trigger = "Continuous"
+       duration = "10 minutes"
+     """
 
-    "return AvailableNow trigger given AvailableNow configuration with Duration" in {
-      val config = ConfigFactory.parseMap(
-        Map("Trigger" -> "AvailableNow", "Duration" -> "10 minutes")
-      )
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-      val result = getStreamingTrigger(config)
-      result shouldEqual Some(Trigger.AvailableNow())
-    }
+    val result = getStreamingTrigger
+    result.get shouldEqual Trigger.Continuous(Duration("10 minutes"))
+  }
 
-    "return Continuous trigger" in {
-      val config = ConfigFactory.parseMap(
-        Map("Trigger" -> "Continuous", "Duration" -> "10 minutes")
-      )
+  it should "return ProcessingTime trigger when only duration configured" in {
+    val configStr =
+      """
+       duration = "10 minutes"
+     """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-      val result = getStreamingTrigger(config)
-      result shouldEqual Some(Trigger.Continuous(Duration("10 minutes")))
-    }
+    val result = getStreamingTrigger
+    result.get shouldEqual Trigger.ProcessingTime(Duration("10 minutes"))
+  }
 
-    "return ProcessingTime trigger" in {
-      val config = ConfigFactory.parseMap(
-        Map("Duration" -> "1 minute")
-      )
+  it should "return None when neither trigger nor duration configured" in {
+    val configStr =
+      """
+       some_other_config = "value"
+     """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-      val result = getStreamingTrigger(config)
-      result shouldEqual Some(Trigger.ProcessingTime(Duration("1 minute")))
-    }
+    val result = getStreamingTrigger
+    result should be(None)
+  }
 
-    "return none given configuration without Trigger nor Duration" in {
-      val config = ConfigFactory.parseMap(
-        Map.empty[String, String]
-      )
+  it should "throw IllegalArgumentException for invalid trigger/duration combinations" in {
+    val configStr =
+      """
+       trigger = "InvalidTrigger"
+       duration = "10 min"
+     """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-      val result = getStreamingTrigger(config)
-      result shouldEqual None
-    }
-
-    "throws exception given configuration without proper Trigger nor proper Duration" in {
-      intercept[IllegalArgumentException] {
-        val config = ConfigFactory.parseMap(
-          Map("Trigger" -> "NOT_VALID", "Duration" -> "10 minutes")
-        )
-
-        getStreamingTrigger(config)
-      }
-    }
-
-    "throws exception given configuration without proper Trigger nor Duration" in {
-      intercept[IllegalArgumentException] {
-        val config = ConfigFactory.parseMap(
-          Map("Trigger" -> "NOT_VALID")
-        )
-
-        getStreamingTrigger(config)
-      }
+    an[IllegalArgumentException] should be thrownBy {
+      getStreamingTrigger
     }
   }
 }

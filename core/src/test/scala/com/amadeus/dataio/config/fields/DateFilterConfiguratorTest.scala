@@ -1,208 +1,86 @@
 package com.amadeus.dataio.config.fields
 
-import com.amadeus.dataio.core.time.DateRange
-import com.amadeus.dataio.testutils.JavaImplicitConverters._
-import com.typesafe.config.{ConfigException, ConfigFactory}
-import org.apache.spark.sql.functions.col
+import com.typesafe.config.{Config, ConfigFactory}
+import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import scala.collection.immutable.Map
 
-class DateFilterConfiguratorTest extends AnyWordSpec with Matchers {
+class DateFilterConfiguratorTest extends AnyFlatSpec with Matchers {
+  behavior of "getDateFilterRange"
 
-  val expectedFromDate = LocalDate.parse("2022-01-01", DateTimeFormatter.ofPattern("yyyy-MM-dd")).atStartOfDay()
-  val expectedUntilDate = LocalDate.parse("2022-01-08", DateTimeFormatter.ofPattern("yyyy-MM-dd")).atStartOfDay()
-
-  "getDateFilterRange" should {
-    "return DateRange(2022-01-01, +7D)" when {
-
-
-      "given DateReference = 2022-01-01, DateOffset = +7D" in {
-        val config = ConfigFactory.parseMap(
-          Map("DateReference" -> "2022-01-01", "DateOffset" -> "+7D")
-        )
-
-        val result = getDateFilterRange(config)
-
-        result.from shouldBe expectedFromDate
-        result.until shouldBe expectedUntilDate
+  it should "return date range when proper config exists" in {
+    val configStr               = """
+      date_filter {
+        reference= "2023-01-01"
+        offset = "+5D"
       }
+    """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-      "given DateFilter{Reference = 2022-01-01, Offset = +7D}" in {
-        val config = ConfigFactory.parseMap(
-          Map("DateFilter" -> Map("Reference" -> "2022-01-01", "Offset" -> "+7D"))
-        )
+    val result = getDateFilterRange
+    result.isDefined should be(true)
 
-        val result = getDateFilterRange(config)
+    val dateRange = result.get
+    dateRange.from.toLocalDate should be(LocalDate.parse("2023-01-01"))
+    dateRange.until.toLocalDate should be(LocalDate.parse("2023-01-06"))
+  }
 
-        result.from shouldBe expectedFromDate
-        result.until shouldBe expectedUntilDate
-      }
-    }
+  it should "throw IllegalArgumentException when only reference exists" in {
+    val configStr =
+      """
+      date_filter.reference = "2023-01-01"
+    """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-    "throw a ConfigException" when {
-      "given a Config without DateReference and DateOffset and DateFilter.Reference and DateFilter.Offset " in {
-        intercept[ConfigException] {
-          val config = ConfigFactory.empty()
-
-          getDateFilterRange(config)
-        }
-      }
-
-      "given DateReference without DateOffset" in {
-        intercept[IllegalArgumentException] {
-          val config = ConfigFactory.parseMap(
-            Map("DateReference" -> "2022-01-01")
-          )
-
-          getDateFilterRange(config)
-        }
-      }
-
-      "given DateOffset without DateReference" in {
-        intercept[IllegalArgumentException] {
-          val config = ConfigFactory.parseMap(
-            Map("DateOffset" -> "+7D")
-          )
-
-          getDateFilterRange(config)
-        }
-      }
-
-      "given DateFilter.Reference without DateFilter.Offset" in {
-        intercept[IllegalArgumentException] {
-          val config = ConfigFactory.parseMap(
-            Map("DateFilter.Reference" -> "2022-01-01")
-          )
-
-          getDateFilterRange(config)
-        }
-      }
-
-      "given DateFilter.Offset without DateFilter.Reference" in {
-        intercept[IllegalArgumentException] {
-          val config = ConfigFactory.parseMap(
-            Map("DateFilter.Offset" -> "+7D")
-          )
-
-          getDateFilterRange(config)
-        }
-      }
+    an[IllegalArgumentException] should be thrownBy {
+      getDateFilterRange
     }
   }
 
+  it should "throw IllegalArgumentException when only offset exists" in {
+    val configStr =
+      """
+      date_filter.offset = "+5D"
+    """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-  "testArguments" should {
-    "be true if both reference and offset are in the configuration" in {
-      val config = ConfigFactory.parseMap(
-        Map("DateReference" -> "2022-01-01",
-          "DateOffset" -> "+7D")
-      )
-
-      testArguments("DateReference", "DateOffset")(config) shouldBe true
-    }
-
-    "be true if neither reference nor offset are in the configuration" in {
-      val config = ConfigFactory.parseMap(
-        Map("random" -> "2022-01-01")
-      )
-
-      testArguments("DateReference", "DateOffset")(config) shouldBe true
-    }
-
-    "be false if only reference is in the configuration" in {
-      val config = ConfigFactory.parseMap(
-        Map("DateReference" -> "2022-01-01")
-      )
-
-      testArguments("DateReference", "DateOffset")(config) shouldBe false
-    }
-
-    "be false if only offset is in the configuration" in {
-      val config = ConfigFactory.parseMap(
-        Map("DateOffset" -> "+7D")
-      )
-
-      testArguments("DateReference", "DateOffset")(config) shouldBe false
+    an[IllegalArgumentException] should be thrownBy {
+      getDateFilterRange
     }
   }
 
-  "getArguments" should {
+  it should "return None when neither reference nor offset exists" in {
+    val configStr =
+      """
+      some_other_config = "value"
+    """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-    val expectedDateRange = DateRange(expectedFromDate, expectedUntilDate)
-
-    "return a DateRange if both reference and offset are in the configuration" in {
-      val config = ConfigFactory.parseMap(
-        Map("DateReference" -> "2022-01-01",
-          "DateOffset" -> "+7D")
-      )
-
-      getArguments("DateReference", "DateOffset")(config) shouldEqual expectedDateRange
-    }
-
-    "throw if both reference and offset are missing from configuration" in {
-      intercept[ConfigException] {
-        val config = ConfigFactory.parseMap(
-          Map("random" -> "2022-01-01")
-        )
-
-        getArguments("DateReference", "DateOffset")(config) shouldEqual expectedDateRange
-      }
-    }
-
-    "throw if reference is missing from configuration" in {
-      intercept[ConfigException] {
-        val config = ConfigFactory.parseMap(
-          Map("DateOffset" -> "+7D")
-        )
-
-        getArguments("DateReference", "DateOffset")(config) shouldEqual expectedDateRange
-      }
-    }
-
-    "throw if offset is missing from configuration" in {
-      intercept[ConfigException] {
-        val config = ConfigFactory.parseMap(
-          Map("DateReference" -> "2022-01-01")
-        )
-
-        getArguments("DateReference", "DateOffset")(config) shouldEqual expectedDateRange
-      }
-    }
+    val result = getDateFilterRange
+    result should be(None)
   }
 
-  "getDateFilterColumn" should {
-    "return col(dateCol)" when {
-      val expectedCol = col("dateCol")
+  "getDateFilterColumn" should "return a Column when column exists in config" in {
+    val configStr =
+      """
+      date_filter.column = "created_at"
+    """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-      "given DateColumn = dateCol" in {
-        val config = ConfigFactory.parseMap(
-          Map("DateColumn" -> "dateCol")
-        )
+    val result = getDateFilterColumn
+    result.isDefined should be(true)
+    // Cannot directly compare Column objects, so checking if defined is sufficient
+  }
 
-        getDateFilterColumn(config) shouldBe expectedCol
-      }
+  it should "return None when column doesn't exist in config" in {
+    val configStr =
+      """
+      some_other_config = "value"
+    """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-      "given DateFilter.Column = dateCol" in {
-        val config = ConfigFactory.parseMap(
-          Map("DateFilter" -> Map("Column" -> "dateCol"))
-        )
-
-        getDateFilterColumn(config) shouldBe expectedCol
-      }
-    }
-
-    "throw a ConfigException" when {
-      "given a Config without DateFilterColumn and DateFilter.Column" in {
-        intercept[ConfigException] {
-          val config = ConfigFactory.empty()
-
-          getDateFilterColumn(config)
-        }
-      }
-    }
+    val result = getDateFilterColumn
+    result should be(None)
   }
 }

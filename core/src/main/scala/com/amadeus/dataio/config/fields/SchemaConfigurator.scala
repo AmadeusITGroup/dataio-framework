@@ -2,16 +2,18 @@ package com.amadeus.dataio.config.fields
 
 import com.typesafe.config.Config
 
-/**
- * Retrieve schema full qualified name
- */
+import scala.util.Try
+
+/** Retrieve schema full qualified name
+  */
 trait SchemaConfigurator {
 
-  /**
-   * @param config The typesafe Config object holding the configuration.
-   * @return the schema full qualified name.
-   */
-  def getSchema(implicit config: Config): String = {
-    config.getString("Schema")
+  /** @param config The typesafe Config object holding the configuration.
+    * @return The schema full qualified name, or None.
+    */
+  def getSchema(implicit config: Config): Option[String] = {
+    Try {
+      config.getString("schema")
+    }.toOption
   }
 }

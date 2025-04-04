@@ -12,7 +12,7 @@ class InstantiationHelperTest extends AnyWordSpec with Matchers {
     "instantiating a class that exists with the proper config" should {
       "succeed" in {
         val config: Config = ConfigFactory.parseMap(
-          Map("Type" -> "com.amadeus.dataio.core.MockEntity", "Name" -> "test", "Field1" -> "value1")
+          Map("type" -> "com.amadeus.dataio.core.MockEntity", "name" -> "test", "Field1" -> "value1")
         )
         val configNode: ConfigNode = ConfigNode(config)
         val entity                 = InstantiationHelper.instantiateWithCompanionObject[AnyRef](configNode)
@@ -24,7 +24,7 @@ class InstantiationHelperTest extends AnyWordSpec with Matchers {
     "instantiating a class which throws an exception" should {
       "throw the same exception" in {
         val config: Config = ConfigFactory.parseMap(
-          Map("Type" -> "com.amadeus.dataio.core.MockEntity", "Name" -> "test")
+          Map("type" -> "com.amadeus.dataio.core.MockEntity", "name" -> "test")
         )
         val configNode: ConfigNode = ConfigNode(config)
 
@@ -39,7 +39,7 @@ class InstantiationHelperTest extends AnyWordSpec with Matchers {
     "instantiating a class that does not exist" should {
       "throw a ClassNotFoundException with the name of the class" in {
         val config: Config = ConfigFactory.parseMap(
-          Map("Type" -> "com.amadeus.dataio.core.UndefinedEntity", "Name" -> "test")
+          Map("type" -> "com.amadeus.dataio.core.UndefinedEntity", "name" -> "test")
         )
         val configNode: ConfigNode = ConfigNode(config)
 
@@ -54,7 +54,7 @@ class InstantiationHelperTest extends AnyWordSpec with Matchers {
     "instantiating based on an entity which does not have a companion object" should {
       "throw a ClassNotFoundException with information about the missing companion object" in {
         val config: Config = ConfigFactory.parseMap(
-          Map("Type" -> "com.amadeus.dataio.core.DummyClassWithoutCompanionObject", "Name" -> "test")
+          Map("type" -> "com.amadeus.dataio.core.DummyClassWithoutCompanionObject", "name" -> "test")
         )
         val configNode: ConfigNode = ConfigNode(config)
 
@@ -69,7 +69,7 @@ class InstantiationHelperTest extends AnyWordSpec with Matchers {
     "instantiating without an apply method" should {
       "throw an Exception with information about the missing apply method" in {
         val config: Config = ConfigFactory.parseMap(
-          Map("Type" -> "com.amadeus.dataio.core.DummyClassWithoutApplyMethod", "Name" -> "test")
+          Map("type" -> "com.amadeus.dataio.core.DummyClassWithoutApplyMethod", "name" -> "test")
         )
         val configNode: ConfigNode = ConfigNode(config)
 
@@ -84,7 +84,7 @@ class InstantiationHelperTest extends AnyWordSpec with Matchers {
     "instantiating a distributor with a companion object missing the propre signature for its apply method" should {
       "throw an exception saying so" in {
         val config: Config = ConfigFactory.parseMap(
-          Map("Type" -> "com.amadeus.dataio.core.MockEntityWithInvalidCompanionObject", "Name" -> "test")
+          Map("type" -> "com.amadeus.dataio.core.MockEntityWithInvalidCompanionObject", "name" -> "test")
         )
         val configNode: ConfigNode = ConfigNode(config)
 
@@ -99,7 +99,7 @@ class InstantiationHelperTest extends AnyWordSpec with Matchers {
     "instantiating based on an entity which does not extend the given parent type" should {
       "throw a ClassCastException" in {
         val config: Config = ConfigFactory.parseMap(
-          Map("Type" -> "com.amadeus.dataio.core.DummyCaseClass", "Name" -> "test")
+          Map("type" -> "com.amadeus.dataio.core.DummyCaseClass", "name" -> "test")
         )
         val configNode: ConfigNode = ConfigNode(config)
 

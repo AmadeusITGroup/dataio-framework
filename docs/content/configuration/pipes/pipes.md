@@ -11,7 +11,7 @@ fields:
     - name: Type
       mandatory: "Yes"
       description: The fully qualified name of the class to use as pipe (Input or Output).
-      example: Type = "com.amadeus.dataio.pipes.storage.batch.StorageInput"
+      example: Type = "com.amadeus.dataio.pipes.spark.batch.SparkInput"
 ---
 # Pipes
 

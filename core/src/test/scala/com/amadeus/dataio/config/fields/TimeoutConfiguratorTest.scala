@@ -1,62 +1,42 @@
 package com.amadeus.dataio.config.fields
 
-import com.amadeus.dataio.testutils.JavaImplicitConverters._
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
+import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 
-class TimeoutConfiguratorTest extends AnyWordSpec with Matchers {
+class TimeoutConfiguratorTest extends AnyFlatSpec with Matchers {
 
-  "getTimeout" should {
-    "return timeout in millisecond" when {
+  behavior of "getTimeout"
+  it should "return timeout in milliseconds when configured" in {
+    val configStr =
+      """
+        timeout = "5 seconds"
+      """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-      "given implicit duration in hour (as string)" in {
-        val config = ConfigFactory.parseMap(
-          Map("Timeout" -> "2")
-        )
+    val result = getTimeout
+    result should be(Some(5000))
+  }
 
-        getTimeout(config) shouldEqual 7200000
-      }
+  it should "return None when timeout not configured" in {
+    val configStr =
+      """
+        some_other_config = "value"
+      """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-      "given implicit duration in hour (as int)" in {
-        val config = ConfigFactory.parseMap(
-          Map("Timeout" -> 2)
-        )
+    val result = getTimeout
+    result should be(None)
+  }
 
-        getTimeout(config) shouldEqual 7200000
-      }
+  it should "return None when timeout format is invalid" in {
+    val configStr =
+      """
+        timeout = "invalid format"
+      """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-      "given explicit duration in hours" in {
-        val config = ConfigFactory.parseMap(
-          Map("Timeout" -> "4 hours")
-        )
-
-        getTimeout(config) shouldEqual 14400000
-      }
-
-      "given explicit duration in minutes" in {
-        val config = ConfigFactory.parseMap(
-          Map("Timeout" -> "3 minutes")
-        )
-
-        getTimeout(config) shouldEqual 180000
-      }
-
-      "given explicit duration in seconds" in {
-        val config = ConfigFactory.parseMap(
-          Map("Timeout" -> "1 seconds")
-        )
-
-        getTimeout(config) shouldEqual 1000
-      }
-
-      "given explicit duration in milliseconds" in {
-        val config = ConfigFactory.parseMap(
-          Map("Timeout" -> "5 milliseconds")
-        )
-
-        getTimeout(config) shouldEqual 5
-      }
-    }
+    val result = getTimeout
+    result should be(None)
   }
 }

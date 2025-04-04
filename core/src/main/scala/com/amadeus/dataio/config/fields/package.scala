@@ -1,7 +1,5 @@
 package com.amadeus.dataio.config
 
-import com.amadeus.dataio.pipes.kafka.KafkaConfigurator
-
 package object fields
     extends DateFilterConfigurator
     with DropDuplicatesConfigurator

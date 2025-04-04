@@ -1,5 +1,5 @@
 input: 
-  type: com.amadeus.dataio.pipes.storage.batch.StorageInput
+  type: com.amadeus.dataio.pipes.spark.batch.StorageInput
 
 output:
-  type: com.amadeus.dataio.pipes.storage.batch.StorageOutput
+  type: com.amadeus.dataio.pipes.spark.batch.StorageOutput

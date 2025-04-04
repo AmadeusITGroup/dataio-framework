@@ -6,31 +6,21 @@ import scala.util.Try
 
 trait RepartitionConfigurator {
 
-  /**
-   * @param config The typesafe Config object holding the configuration.
-   * @return The number of partitions to use with `repartition(...)`.
-   * @throws com.typesafe.config.ConfigException If data is missing in the config argument. See the user documentation
-   *                                             for the expected fields.
-   */
-  def getRepartitionNumber(implicit config: Config): Int = {
+  /** @param config The typesafe Config object holding the configuration.
+    * @return The number of partitions to use with `repartition(...)`, or None.
+    */
+  def getRepartitionNum(implicit config: Config): Option[Int] = {
     Try {
-      config.getInt("RepartitioningNumber")
-    } getOrElse {
-      config.getInt("Repartition.Number")
-    }
+      config.getInt("repartition.num")
+    }.toOption
   }
 
-  /**
-   * @param config The typesafe Config object holding the configuration.
-   * @return The column expression to use with `repartition(...)`.
-   * @throws com.typesafe.config.ConfigException If data is missing in the config argument. See the user documentation
-   *                                             for the expected fields.
-   */
-  def getRepartitionColumn(implicit config: Config): String = {
+  /** @param config The typesafe Config object holding the configuration.
+    * @return The column expression to use with `repartition(...)`, or None.
+    */
+  def getRepartitionExprs(implicit config: Config): Option[String] = {
     Try {
-      config.getString("RepartitioningColumn")
-    }.getOrElse {
-      config.getString("Repartition.Column")
-    }
+      config.getString("repartition.exprs")
+    }.toOption
   }
 }

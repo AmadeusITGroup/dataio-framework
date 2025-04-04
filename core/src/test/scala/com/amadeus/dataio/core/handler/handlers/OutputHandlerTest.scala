@@ -1,8 +1,8 @@
 package com.amadeus.dataio.core.handler.handlers
 
 import com.amadeus.dataio.config.ConfigNodeCollection
-import com.amadeus.dataio.pipes.storage.batch
-import com.amadeus.dataio.pipes.storage.streaming.StorageOutput
+import com.amadeus.dataio.pipes.spark.batch
+import com.amadeus.dataio.pipes.spark.streaming.SparkOutput
 import com.amadeus.dataio.testutils.JavaImplicitConverters._
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.sql.streaming.Trigger
@@ -15,18 +15,18 @@ class OutputHandlerTest extends AnyWordSpec with Matchers {
 
   "Output handler" should {
 
-    "return my StorageOutput" in {
+    "return my SparkOutput" in {
       val config = ConfigFactory.parseMap(
         Map(
           "Output" -> Map(
-            "Type"               -> "com.amadeus.dataio.pipes.storage.streaming.StorageOutput",
-            "Name"               -> "my-test-storage",
-            "Path"               -> "output/fileStreamOutputConfigTest",
-            "Format"             -> "delta",
-            "PartitioningColumn" -> "upd_date,version",
-            "Mode"               -> "update",
-            "Timeout"            -> "24",
-            "Options" -> Map(
+            "type"         -> "com.amadeus.dataio.pipes.spark.streaming.SparkOutput",
+            "name"         -> "my-test-spark",
+            "path"         -> "output/fileStreamOutputConfigTest",
+            "format"       -> "delta",
+            "partition_by" -> "upd_date,version",
+            "mode"         -> "update",
+            "timeout"      -> "24h",
+            "options" -> Map(
               "\"spark.sql.parquet.compression.codec\"" -> "snappy",
               "checkpointLocation"                      -> "maprfs://bktv001//test/checkpoint",
               "mergeSchema"                             -> "true"
@@ -38,13 +38,13 @@ class OutputHandlerTest extends AnyWordSpec with Matchers {
       val configCollection = ConfigNodeCollection("Output", config)
       val outputHandler    = OutputHandler(configCollection)
 
-      val storageStreamOutput = outputHandler.getOne("my-test-storage").asInstanceOf[StorageOutput]
+      val storageStreamOutput = outputHandler.getOne("my-test-spark").asInstanceOf[SparkOutput]
 
-      storageStreamOutput.format shouldEqual "delta"
-      storageStreamOutput.path shouldEqual "output/fileStreamOutputConfigTest"
-      storageStreamOutput.partitioningColumns shouldEqual Seq("upd_date", "version")
+      storageStreamOutput.format shouldEqual Some("delta")
+      storageStreamOutput.path shouldEqual Some("output/fileStreamOutputConfigTest")
+      storageStreamOutput.partitionByColumns shouldEqual Seq("upd_date", "version")
       storageStreamOutput.trigger shouldEqual None
-      storageStreamOutput.timeout shouldEqual 86400000
+      storageStreamOutput.timeout shouldEqual Some(86400000)
       storageStreamOutput.mode shouldEqual "update"
       storageStreamOutput.options shouldEqual Map(
         "spark.sql.parquet.compression.codec" -> "snappy",
@@ -54,30 +54,30 @@ class OutputHandlerTest extends AnyWordSpec with Matchers {
 
     }
 
-    "return my streaming StorageInput and my batch StorageInput " in {
+    "return my streaming SparkInput and my batch SparkInput " in {
       val config = ConfigFactory.parseMap(
         Map(
           "Output" -> Seq(
             Map(
-              "Type"               -> "com.amadeus.dataio.pipes.storage.streaming.StorageOutput",
-              "Name"               -> "my-streaming-storage",
-              "Path"               -> "output/fileStreamOutputConfigTest",
-              "Format"             -> "delta",
-              "PartitioningColumn" -> "upd_date,version",
-              "Mode"               -> "update",
-              "Duration"           -> "60 seconds",
-              "Timeout"            -> "24",
-              "Options" -> Map(
+              "type"         -> "com.amadeus.dataio.pipes.spark.streaming.SparkOutput",
+              "name"         -> "my-streaming-spark",
+              "path"         -> "output/fileStreamOutputConfigTest",
+              "format"       -> "delta",
+              "partition_by" -> "upd_date,version",
+              "mode"         -> "update",
+              "duration"     -> "60 seconds",
+              "timeout"      -> "24h",
+              "options" -> Map(
                 "\"spark.sql.parquet.compression.codec\"" -> "snappy",
                 "checkpointLocation"                      -> "maprfs://bktv001//test/checkpoint",
                 "mergeSchema"                             -> "true"
               )
             ),
             Map(
-              "Type"   -> "com.amadeus.dataio.pipes.storage.batch.StorageOutput",
-              "Name"   -> "my-batch-storage",
-              "Path"   -> "output/fileBatchOutputConfigTest",
-              "Format" -> "parquet"
+              "type"   -> "com.amadeus.dataio.pipes.spark.batch.SparkOutput",
+              "name"   -> "my-batch-spark",
+              "path"   -> "output/fileBatchOutputConfigTest",
+              "format" -> "parquet"
             )
           )
         )
@@ -91,17 +91,17 @@ class OutputHandlerTest extends AnyWordSpec with Matchers {
 
       for (output <- outputHandler.getAll) {
         output match {
-          case storage: batch.StorageOutput =>
-            storage.path shouldEqual "output/fileBatchOutputConfigTest"
-            storage.format.get shouldEqual "parquet"
+          case storage: batch.SparkOutput =>
+            storage.path shouldEqual Some("output/fileBatchOutputConfigTest")
+            storage.format shouldEqual Some("parquet")
             batchStorageFound = true
 
-          case streamingStorage: StorageOutput =>
-            streamingStorage.format shouldEqual "delta"
-            streamingStorage.path shouldEqual "output/fileStreamOutputConfigTest"
-            streamingStorage.partitioningColumns shouldEqual Seq("upd_date", "version")
+          case streamingStorage: SparkOutput =>
+            streamingStorage.format shouldEqual Some("delta")
+            streamingStorage.path shouldEqual Some("output/fileStreamOutputConfigTest")
+            streamingStorage.partitionByColumns shouldEqual Seq("upd_date", "version")
             streamingStorage.trigger shouldEqual Some(Trigger.ProcessingTime(Duration("60 seconds")))
-            streamingStorage.timeout shouldEqual 86400000
+            streamingStorage.timeout shouldEqual Some(86400000)
             streamingStorage.mode shouldEqual "update"
             streamingStorage.options shouldEqual Map(
               "spark.sql.parquet.compression.codec" -> "snappy",

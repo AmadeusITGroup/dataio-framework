@@ -33,7 +33,7 @@ package object dataio {
    */
   type Logging = com.amadeus.dataio.core.Logging
 
-  type Pipeline = com.amadeus.dataio.pipelines.Pipeline
+  type Pipeline = com.amadeus.dataio.pipeline.Pipeline
 
   /**
    * Represents a data pipeline. It contains a unique <em>run()</em> method that glues all Data IO concepts together by:
@@ -51,10 +51,10 @@ package object dataio {
    *   pipeline.run(spark)
    * }}}
    */
-  val Pipeline: com.amadeus.dataio.pipelines.Pipeline.type = com.amadeus.dataio.pipelines.Pipeline
+  val Pipeline: com.amadeus.dataio.pipeline.Pipeline.type = com.amadeus.dataio.pipeline.Pipeline
 
   /**
-   * Unified interface for transformation logic within your pipelines.
+   * Unified interface for transformation logic within your pipeline.
    *
    * Configuration fields provided in the Processing configuration node are available in the `config` member.
    *

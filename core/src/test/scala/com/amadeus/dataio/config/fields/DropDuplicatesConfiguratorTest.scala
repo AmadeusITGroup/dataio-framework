@@ -1,60 +1,59 @@
 package com.amadeus.dataio.config.fields
 
-import com.amadeus.dataio.testutils.JavaImplicitConverters._
-import com.typesafe.config.{ConfigException, ConfigFactory}
+import com.typesafe.config.{Config, ConfigFactory}
+import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 
-class DropDuplicatesConfiguratorTest extends AnyWordSpec with Matchers {
+class DropDuplicatesConfiguratorTest extends AnyFlatSpec with Matchers {
+  behavior of "getDropDuplicatesColumns"
+  it should "parse comma-separated string values" in {
+    val configStr               = """
+      drop_duplicates = "id, name, date"
+    """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-  "getDropDuplicatesColumns" should {
-    "return Seq(col1, col2)" when {
-      "given DropDuplicates.Columns = col1, col2" in {
-        val config = ConfigFactory.parseMap(
-          Map("DropDuplicates.Columns" -> "col1, col2")
-        )
-        getDropDuplicatesColumns(config) should contain theSameElementsAs Seq("col1", "col2")
-      }
-
-      "given DropDuplicates.Columns = [col1, col2]" in {
-        val config = ConfigFactory.parseMap(
-          Map("DropDuplicates.Columns" -> Seq("col1", "col2"))
-        )
-
-        getDropDuplicatesColumns(config) should contain theSameElementsAs Seq("col1", "col2")
-      }
-    }
-
-    "throw a ConfigException" when {
-      "given a Config without DropDuplicates.Columns" in {
-        intercept[ConfigException] {
-          val config = ConfigFactory.empty()
-
-          getDropDuplicatesColumns(config)
-        }
-      }
-    }
+    val result = getDropDuplicatesColumns
+    result should be(List("id", "name", "date"))
   }
 
-  "getDropDuplicatesActive" should {
-    "return true" when {
-      "given DropDuplicates.Active = true" in {
-        val config = ConfigFactory.parseMap(
-          Map("DropDuplicates.Active" -> true)
-        )
+  it should "parse string list values" in {
+    val configStr               = """
+      drop_duplicates = ["id", "name", "date"]
+    """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-        getDropDuplicatesActive(config) shouldBe true
-      }
-    }
+    val result = getDropDuplicatesColumns
+    result should be(List("id", "name", "date"))
+  }
 
-    "throw a ConfigException" when {
-      "given a Config without DropDuplicates.Active" in {
-        intercept[ConfigException] {
-          val config = ConfigFactory.empty()
+  it should "return empty sequence when drop_duplicates doesn't exist" in {
+    val configStr               = """
+      some_other_config = "value"
+    """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-          getDropDuplicatesActive(config)
-        }
-      }
-    }
+    val result = getDropDuplicatesColumns
+    result should be(Seq())
+  }
+
+  behavior of "getDropDuplicatesActive"
+  it should "return true when drop_duplicates exists" in {
+    val configStr               = """
+      drop_duplicates = "id, name, date"
+    """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
+
+    val result = getDropDuplicatesActive
+    result should be(true)
+  }
+
+  it should "return false when drop_duplicates doesn't exist" in {
+    val configStr               = """
+      some_other_config = "value"
+    """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
+
+    val result = getDropDuplicatesActive
+    result should be(false)
   }
 }

@@ -1,46 +1,41 @@
 package com.amadeus.dataio.config.fields
 
-import com.amadeus.dataio.testutils.JavaImplicitConverters._
-import com.typesafe.config.{ConfigException, ConfigFactory}
+import com.typesafe.config.{Config, ConfigFactory}
+import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 
-class PartitionByConfiguratorTest extends AnyWordSpec with Matchers {
-  "getPartitionByColumns" should {
-    "return Seq(col, col2, col3)" when {
-      "given PartitionBy = col1, col2, col3" in {
-        val config = ConfigFactory.parseMap(
-          Map("PartitionBy" -> "col1, col2, col3")
-        )
+class PartitionByConfiguratorTest extends AnyFlatSpec with Matchers {
+  behavior of "getPartitionByColumns"
+  "getPartitionByColumns" should "parse comma-separated string values" in {
+    val configStr =
+      """
+       partition_by = "year, month, day"
+     """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-        getPartitionByColumns(config) should contain theSameElementsAs Seq("col1", "col2", "col3")
-      }
+    val result = getPartitionByColumns
+    result should be(List("year", "month", "day"))
+  }
 
-      "given PartitionBy = [col1, col2, col3]" in {
-        val config = ConfigFactory.parseMap(
-          Map("PartitionBy" -> Seq("col1", "col2", "col3"))
-        )
+  it should "parse string list values" in {
+    val configStr =
+      """
+       partition_by = ["year", "month", "day"]
+     """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-        getPartitionByColumns(config) should contain theSameElementsAs Seq("col1", "col2", "col3")
-      }
+    val result = getPartitionByColumns
+    result should be(List("year", "month", "day"))
+  }
 
-      "given PartitioningColumn = col1, col2, col3" in {
-        val config = ConfigFactory.parseMap(
-          Map("PartitioningColumn" -> "col1, col2, col3")
-        )
+  it should "return empty sequence when partition_by doesn't exist" in {
+    val configStr =
+      """
+       some_other_config = "value"
+     """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-        getPartitionByColumns(config) should contain theSameElementsAs Seq("col1", "col2", "col3")
-      }
-
-
-    }
-
-    "return an empty Sequence" when {
-      "given a missing input" in {
-        val config = ConfigFactory.parseMap(Map[String, String]())
-
-        getPartitionByColumns(config) should contain theSameElementsAs Seq[String]()
-      }
-    }
+    val result = getPartitionByColumns
+    result should be(Seq())
   }
 }

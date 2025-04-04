@@ -1,11 +1,10 @@
 package com.amadeus.dataio.processing
 
-import com.amadeus.dataio.testutils.SparkSuite
+import com.amadeus.dataio.testutils.SparkSpec
 import org.apache.spark.sql.DataFrame
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 
-class IdentityTest extends AnyWordSpec with SparkSuite with Matchers {
+class IdentityTest extends SparkSpec with Matchers {
 
   val inputData = Seq(
     ("hello", 42),
@@ -13,35 +12,32 @@ class IdentityTest extends AnyWordSpec with SparkSuite with Matchers {
   )
   lazy val inputColumns: Seq[String] = Seq("text", "number")
 
-  "the Identity processor" should {
-    "output the same schema as the input" in {
-      val inputDF: DataFrame = sparkSession
-        .createDataFrame(
-          sparkSession.sparkContext.parallelize(inputData)
-        )
-        .toDF(
-          inputColumns: _*
-        )
+  behavior of "Identity"
+  it should "output the same schema as the input" in sparkTest { spark =>
+    val inputDF: DataFrame = spark
+      .createDataFrame(
+        spark.sparkContext.parallelize(inputData)
+      )
+      .toDF(
+        inputColumns: _*
+      )
 
-      val outputDF: DataFrame = new Identity().featurize(inputDF)
+    val outputDF: DataFrame = new Identity().featurize(inputDF)
 
-      outputDF.schema shouldBe inputDF.schema
-    }
-
-    "output the same rows as the input" in {
-      val inputDF: DataFrame = sparkSession
-        .createDataFrame(
-          sparkSession.sparkContext.parallelize(inputData)
-        )
-        .toDF(
-          inputColumns: _*
-        )
-
-      val outputDF: DataFrame = new Identity().featurize(inputDF)
-
-      outputDF.collect should contain theSameElementsAs inputDF.collect
-    }
+    outputDF.schema shouldBe inputDF.schema
   }
 
-  override def getTestName: String = "IdentityTransformerTest"
+  it should "output the same rows as the input" in sparkTest { spark =>
+    val inputDF: DataFrame = spark
+      .createDataFrame(
+        spark.sparkContext.parallelize(inputData)
+      )
+      .toDF(
+        inputColumns: _*
+      )
+
+    val outputDF: DataFrame = new Identity().featurize(inputDF)
+
+    outputDF.collect should contain theSameElementsAs inputDF.collect
+  }
 }

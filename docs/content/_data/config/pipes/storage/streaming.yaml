@@ -1,8 +1,8 @@
 input:
-  type: com.amadeus.dataio.pipes.storage.streaming.StorageInput
+  type: com.amadeus.dataio.pipes.spark.streaming.StorageInput
 
 output:
-  type: com.amadeus.dataio.pipes.storage.streaming.StorageOutput
+  type: com.amadeus.dataio.pipes.spark.streaming.StorageOutput
   fields:
     - name: Trigger
       mandatory: "No"

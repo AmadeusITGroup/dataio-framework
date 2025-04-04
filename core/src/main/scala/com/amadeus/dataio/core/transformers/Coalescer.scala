@@ -7,11 +7,11 @@ trait Coalescer extends Logging {
   val coalesce: Option[Int]
 
   def applyCoalesce[T](ds: Dataset[T]): Dataset[T] = {
-    logger.info(s"Coalesce: $coalesce.")
-
     coalesce match {
-      case Some(number) => ds.coalesce(number)
-      case None         => ds
+      case Some(number) =>
+        logger.info(s"coalesce: $coalesce")
+        ds.coalesce(number)
+      case None => ds
     }
   }
 }

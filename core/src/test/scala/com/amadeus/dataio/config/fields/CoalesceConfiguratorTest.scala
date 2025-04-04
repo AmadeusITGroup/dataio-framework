@@ -1,39 +1,29 @@
 package com.amadeus.dataio.config.fields
 
-import com.amadeus.dataio.testutils.JavaImplicitConverters._
-import com.typesafe.config.{ConfigException, ConfigFactory}
+import com.typesafe.config.{Config, ConfigFactory}
+import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 
-class CoalesceConfiguratorTest extends AnyWordSpec with Matchers {
+class CoalesceConfiguratorTest extends AnyFlatSpec with Matchers {
 
-  "getCoalesceNumber" should {
-    "return 5" when {
-      "given Coalesce = 5" in {
-        val config = ConfigFactory.parseMap(
-          Map("Coalesce" -> 5)
-        )
+  behavior of "getCoalesceNumber"
+  it should "return the coalesce number when it exists in config" in {
+    val configStr =
+      """
+    coalesce = 10
+  """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-        getCoalesceNumber(config) shouldBe 5
-      }
+    getCoalesceNumber should be(Some(10))
+  }
 
-      "given Coalesce{ Number = 5 }" in {
-        val config = ConfigFactory.parseMap(
-          Map("Coalesce" -> Map("Number" -> 5))
-        )
+  it should "return None when coalesce number doesn't exist in config" in {
+    val configStr =
+      """
+    some_other_config = 10
+  """
+    implicit val config: Config = ConfigFactory.parseString(configStr)
 
-        getCoalesceNumber(config) shouldBe 5
-      }
-    }
-
-    "throw a ConfigException" when {
-      "given a Config without Coalesce or Coalesce.Number" in {
-        intercept[ConfigException] {
-          val config = ConfigFactory.empty()
-
-          getCoalesceNumber(config)
-        }
-      }
-    }
+    getCoalesceNumber should be(None)
   }
 }
