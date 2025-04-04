@@ -121,7 +121,7 @@ lazy val core = (project in file("core"))
       "commons-io" % "commons-io" % commonsIoVersion
     )
   )
-  .dependsOn(testutils)
+  .dependsOn(testutils % Test)
 
 lazy val kafka = (project in file("kafka"))
   .settings(
@@ -131,7 +131,7 @@ lazy val kafka = (project in file("kafka"))
       "org.apache.spark" %% "spark-sql-kafka-0-10" % sparkVersion
     )
   )
-  .dependsOn(core, testutils)
+  .dependsOn(core, testutils % Test)
 
 lazy val snowflake = (project in file("snowflake"))
   .settings(
@@ -141,7 +141,7 @@ lazy val snowflake = (project in file("snowflake"))
       "net.snowflake" %% "spark-snowflake" % f"3.1.1"
     )
   )
-  .dependsOn(core, testutils)
+  .dependsOn(core, testutils % Test)
 
 lazy val elasticsearch = (project in file("elasticsearch"))
   .settings(
@@ -158,7 +158,7 @@ lazy val elasticsearch = (project in file("elasticsearch"))
         exclude ("org.apache.spark", "spark-streaming_" + scalaVersion.value.substring(0, 4))
     )
   )
-  .dependsOn(core, testutils)
+  .dependsOn(core, testutils % Test)
 
 lazy val test = (project in file("test"))
   .settings(
