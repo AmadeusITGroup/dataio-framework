@@ -33,6 +33,10 @@ jobs:
           distribution: "temurin"
           cache: "sbt"
 
+      - uses: sbt/setup-sbt@v1
+        with:
+          sbt-runner-version: 1.10.11
+
       - name: Run SBT release
         run: sbt release with-defaults
 

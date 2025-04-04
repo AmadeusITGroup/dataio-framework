@@ -25,6 +25,10 @@ jobs:
           java-version: 8
           cache: "sbt"
 
+      - uses: sbt/setup-sbt@v1
+        with:
+          sbt-runner-version: 1.10.11
+
       - run: sbt compile
 
       - run: sbt test
