@@ -3,6 +3,7 @@ package com.amadeus.dataio.config
 package object fields
     extends DateFilterConfigurator
     with DropDuplicatesConfigurator
+    with NameConfigurator
     with OptionsConfigurator
     with RepartitionConfigurator
     with SortWithinPartitionsConfigurator

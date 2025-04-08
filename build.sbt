@@ -169,6 +169,7 @@ lazy val test = (project in file("test"))
       "org.scalamock" %% "scalamock" % scalamockVersion
     )
   )
+  .dependsOn(core, testutils % Test)
 
 // Projects configuration
 lazy val root = (project in file("."))
@@ -176,4 +177,4 @@ lazy val root = (project in file("."))
     name := "dataio",
     publish / skip := true
   )
-  .aggregate(core)
+  .aggregate(core, test)

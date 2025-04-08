@@ -94,7 +94,11 @@ object SparkOutput {
   import com.amadeus.dataio.config.fields._
 
   def apply(implicit config: Config): SparkOutput = {
-    val name               = config.getString("name")
+    val name = Try {
+      config.getString("name")
+    } getOrElse {
+      throw new Exception("Missing required `name` field in configuration.")
+    }
     val path               = getPath
     val format             = Try(config.getString("format")).toOption
     val partitionByColumns = getPartitionByColumns

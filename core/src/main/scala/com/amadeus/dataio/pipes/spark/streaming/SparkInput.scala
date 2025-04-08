@@ -70,7 +70,11 @@ object SparkInput {
     * @return a new SparkInput object.
     */
   def apply(implicit config: Config): SparkInput = {
-    val name   = config.getString("name")
+    val name = Try {
+      config.getString("name")
+    } getOrElse {
+      throw new Exception("Missing required `name` field in configuration.")
+    }
     val path   = getPath
     val format = Try(config.getString("format")).toOption
 

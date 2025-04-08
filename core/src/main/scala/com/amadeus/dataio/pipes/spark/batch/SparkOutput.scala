@@ -13,21 +13,21 @@ import scala.util.Try
   * @param config Contains the Typesafe Config object that was used at instantiation to configure this entity.
   */
 case class SparkOutput(
-                        name: String,
-                        path: Option[String],
-                        format: Option[String] = None,
-                        partitionByColumns: Seq[String],
-                        options: Map[String, String] = Map(),
-                        dropDuplicates: Boolean,
-                        dropDuplicatesColumns: Seq[String],
-                        repartitionNum: Option[Int],
-                        repartitionExprs: Option[String],
-                        repartitionByRangeNum: Option[Int],
-                        repartitionByRangeExprs: Option[String],
-                        sortWithinPartitionExprs: Seq[String],
-                        coalesce: Option[Int],
-                        mode: String,
-                        config: Config = ConfigFactory.empty()
+    name: String,
+    path: Option[String],
+    format: Option[String] = None,
+    partitionByColumns: Seq[String],
+    options: Map[String, String] = Map(),
+    dropDuplicates: Boolean,
+    dropDuplicatesColumns: Seq[String],
+    repartitionNum: Option[Int],
+    repartitionExprs: Option[String],
+    repartitionByRangeNum: Option[Int],
+    repartitionByRangeExprs: Option[String],
+    sortWithinPartitionExprs: Seq[String],
+    coalesce: Option[Int],
+    mode: String,
+    config: Config = ConfigFactory.empty()
 ) extends Output
     with DuplicatesDropper
     with Repartitioner
@@ -84,7 +84,11 @@ object SparkOutput {
     * @return a new SparkOutput object.
     */
   def apply(implicit config: Config): SparkOutput = {
-    val name               = config.getString("name")
+    val name = Try {
+      config.getString("name")
+    } getOrElse {
+      throw new Exception("Missing required `name` field in configuration.")
+    }
     val path               = getPath
     val format             = Try(config.getString("format")).toOption
     val partitionByColumns = getPartitionByColumns
