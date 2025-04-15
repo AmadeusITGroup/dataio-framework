@@ -3,27 +3,29 @@ package com.amadeus.dataio.pipes.spark.streaming
 import com.amadeus.dataio.core.time.DateRange
 import com.amadeus.dataio.core.transformers.{Coalescer, DateFilterer, Repartitioner}
 import com.amadeus.dataio.core.{Input, Logging, SchemaRegistry}
-import com.typesafe.config.{Config, ConfigException, ConfigFactory}
+import com.amadeus.dataio.pipes.spark.{SparkPathSource, SparkSource, SparkTableSource}
+import com.amadeus.dataio.pipes.spark.batch.SparkInput.getSparkSource
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.{Column, DataFrame, SparkSession}
 
 import scala.util.Try
 
 /** Reads a stream of data using the Spark DataStreamReader.
+  * @param source The source from which the data should be read. It can be a table or a path.
   * @param dateRange The date range from which the data should be read.
   * @param dateColumn The name of the date column to use to filter by date range.
   * @param config Contains the Typesafe Config object that was used at instantiation to configure this entity.
   */
 case class SparkInput(
     name: String,
-    path: Option[String],
-    format: Option[String] = None,
+    source: Option[SparkSource] = None,
     options: Map[String, String] = Map(),
-    dateRange: Option[DateRange],
-    dateColumn: Option[Column],
-    repartitionExprs: Option[String],
-    repartitionNum: Option[Int],
-    coalesce: Option[Int],
-    schema: Option[String],
+    dateRange: Option[DateRange] = None,
+    dateColumn: Option[Column] = None,
+    repartitionExprs: Option[String] = None,
+    repartitionNum: Option[Int] = None,
+    coalesce: Option[Int] = None,
+    schema: Option[String] = None,
     config: Config = ConfigFactory.empty()
 ) extends Input
     with Repartitioner
@@ -33,26 +35,33 @@ case class SparkInput(
 
   override def read(implicit spark: SparkSession): DataFrame = {
     logger.info(s"reading stream: $name")
-    if (path.isDefined) logger.info(s"path: ${path.get}")
     if (options.nonEmpty) logger.info(s"options: $options")
-    if (format.isDefined) logger.info(s"format: ${format.get}")
     if (schema.isDefined) logger.info(s"schema: ${schema.get}")
 
     var dsReader = spark.readStream.options(options)
-
-    dsReader = format match {
-      case Some(f) => dsReader.format(f)
-      case None    => dsReader
-    }
 
     dsReader = schema match {
       case Some(s) => dsReader.schema(SchemaRegistry.getSchema(s))
       case None    => dsReader
     }
 
-    val df = path match {
-      case Some(p) => dsReader.load(p)
-      case _       => dsReader.load()
+    val df = source match {
+      case Some(SparkTableSource(table)) =>
+        logger.info(s"table: $table")
+        dsReader.table(table)
+
+      case Some(SparkPathSource(path, formatOpt)) =>
+        logger.info(s"path: $path")
+        formatOpt.foreach(f => logger.info(s"format: $f"))
+        val reader = if (formatOpt.isDefined) {
+          dsReader.format(formatOpt.get)
+        } else {
+          dsReader
+        }
+
+        reader.load(path)
+
+      case _ => dsReader.load()
     }
 
     df
@@ -75,8 +84,7 @@ object SparkInput {
     } getOrElse {
       throw new Exception("Missing required `name` field in configuration.")
     }
-    val path   = getPath
-    val format = Try(config.getString("format")).toOption
+    val source = getSparkSource
 
     val options          = getOptions
     val dateRange        = getDateFilterRange
@@ -88,8 +96,7 @@ object SparkInput {
 
     SparkInput(
       name,
-      path,
-      format,
+      source,
       options,
       dateRange,
       dateColumn,

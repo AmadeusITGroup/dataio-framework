@@ -1,6 +1,7 @@
 package com.amadeus.dataio.core.handler.handlers
 
 import com.amadeus.dataio.config.ConfigNodeCollection
+import com.amadeus.dataio.pipes.spark.SparkPathSource
 import com.amadeus.dataio.pipes.spark.streaming.SparkInput
 import com.amadeus.dataio.testutils.JavaImplicitConverters._
 import com.typesafe.config.ConfigFactory
@@ -30,8 +31,7 @@ class InputHandlerTest extends AnyWordSpec with Matchers {
 
       val myTestStreamInput = inputHandler.getOne("my-test-stream").asInstanceOf[SparkInput]
 
-      myTestStreamInput.path shouldEqual Some("input/fileStreamInputConfigTest.csv")
-      myTestStreamInput.format shouldEqual Some("csv")
+      myTestStreamInput.source shouldEqual Some(SparkPathSource("input/fileStreamInputConfigTest.csv", Some("csv")))
       myTestStreamInput.options shouldEqual Map("delimiter" -> ";")
     }
 
@@ -65,13 +65,11 @@ class InputHandlerTest extends AnyWordSpec with Matchers {
       val inputHandler     = InputHandler(configCollection)
 
       val node1 = inputHandler.getOne("my-test-stream1").asInstanceOf[SparkInput]
-      node1.path shouldEqual Some("input/fileStreamInputConfigTest1.csv")
-      node1.format shouldEqual Some("csv")
+      node1.source shouldEqual Some(SparkPathSource("input/fileStreamInputConfigTest1.csv", Some("csv")))
       node1.options shouldEqual Map("delimiter" -> ";")
 
       val node2 = inputHandler.getOne("my-test-stream2").asInstanceOf[SparkInput]
-      node2.path shouldEqual Some("input/fileStreamInputConfigTest2.csv")
-      node2.format shouldEqual Some("csv")
+      node2.source shouldEqual Some(SparkPathSource("input/fileStreamInputConfigTest2.csv", Some("csv")))
       node2.options shouldEqual Map("delimiter" -> ";")
     }
   }
