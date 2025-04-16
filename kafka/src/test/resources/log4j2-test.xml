@@ -1,14 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
     <Loggers>
-        <!-- Suppress Spark logs -->
-        <Logger name="org.apache.spark" level="WARN" additivity="false">
-            <AppenderRef ref="Console"/>
-        </Logger>
-        <Logger name="org.spark_project" level="WARN" additivity="false">
-            <AppenderRef ref="Console"/>
-        </Logger>
-        <Logger name="org.apache.hadoop" level="WARN" additivity="false">
+        <!-- Show Amadeus logs -->
+        <Logger name="com.amadeus" level="INFO" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
 
@@ -20,7 +14,7 @@
 
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n"/>
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n"/>
         </Console>
     </Appenders>
 </Configuration>

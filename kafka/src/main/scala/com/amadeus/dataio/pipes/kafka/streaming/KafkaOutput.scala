@@ -7,114 +7,88 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 
 import scala.util.Try
 
-/**
- * Class for reading kafka dataframe
+/** Class for reading kafka dataframe
  *
- * @param brokers brokers
- * @param topic topic
- * @param trigger the trigger to be used for the streaming query.
- * @param timeout timeout in milliseconds.
- * @param mode mode.
- * @param options options
  * @param config Contains the Typesafe Config object that was used at instantiation to configure this entity.
- * @param outputName the output name used to define the streaming query name.
  */
 case class KafkaOutput(
-    brokers: String,
-    topic: Option[String],
+                        name: String,
     trigger: Option[Trigger],
-    timeout: Long,
+                        timeout: Option[Long],
     mode: String,
     options: Map[String, String] = Map(),
-    config: Config = ConfigFactory.empty(),
-    outputName: Option[String]
+                        config: Config = ConfigFactory.empty()
 ) extends Output
     with Logging {
 
-  /**
-   * Writes data to this output.
-   *
-   * @param data  The data to write.
-   * @param spark The SparkSession which will be used to write the data.
-   */
   def write[T](data: Dataset[T])(implicit spark: SparkSession): Unit = {
-    logger.info(s"Write dataframe to kafka [$topic] using trigger [$trigger]")
+    logger.info(s"writing to kafka: $name")
+    if (options.nonEmpty) logger.info(s"options: $options")
+    logger.info(s"mode: $mode")
 
     val queryName = createQueryName()
 
-    var fullOptions = options + ("kafka.bootstrap.servers" -> brokers)
-
-    fullOptions = topic match {
-      case Some(kafkaTopic) => options + ("topic" -> kafkaTopic)
-      case _                => options
-    }
-
-    var streamWriter = data.writeStream
+    var dsWriter = data.writeStream
       .queryName(queryName)
       .format("kafka")
-      .options(fullOptions)
+      .options(options)
       .outputMode(mode)
 
-    streamWriter = trigger match {
-      case Some(trigger) => streamWriter.trigger(trigger)
-      case _             => streamWriter
+    dsWriter = trigger match {
+      case Some(t) =>
+        logger.info(s"trigger: $t")
+        dsWriter.trigger(t)
+      case _ => dsWriter
     }
 
-    val streamingQuery = streamWriter.start()
+    val streamingQuery = dsWriter.start()
 
-    streamingQuery.awaitTermination(timeout)
+    if (timeout.isDefined) {
+      val t = timeout.get
+      logger.info(s"timeout: $t")
+      streamingQuery.awaitTermination(t)
+    }
+
     streamingQuery.stop()
   }
 
-  /**
-   * Create a unique query name based on output topic.
+  /** Create a unique query name based on output topic.
    *
    * @return a unique query name.
    */
   private[streaming] def createQueryName(): String = {
 
-    (outputName, topic) match {
-      case (Some(name), Some(kafkaTopic)) => s"QN_${name}_${kafkaTopic}_${java.util.UUID.randomUUID}"
-      case (Some(name), None)             => s"QN_${name}_${java.util.UUID.randomUUID}"
-      case (None, Some(kafkaTopic))       => s"QN_${kafkaTopic}_${java.util.UUID.randomUUID}"
-      case _                              => s"QN_KafkaOutput_${java.util.UUID.randomUUID}"
-    }
-
+    s"QN_${name}_${java.util.UUID.randomUUID}"
   }
 }
 
 object KafkaOutput {
   import com.amadeus.dataio.config.fields._
-  import com.amadeus.dataio.pipes.kafka.KafkaConfigurator._
 
-  /**
-   * Creates an KafkaOutput based on a given configuration.
+  /** Creates an KafkaOutput based on a given configuration.
    *
    * @param config The collection of config nodes that will be used to instantiate KafkaOutput.
    * @return a new instance of KafkaOutput.
-   * @throws com.typesafe.config.ConfigException If any of the mandatory fields is not available in the config argument.
    */
   def apply(implicit config: Config): KafkaOutput = {
-    val brokers = getBroker
-    val topic   = getTopic
-
+    val name = Try {
+      config.getString("name")
+    } getOrElse {
+      throw new Exception("Missing required `name` field in configuration.")
+    }
     val trigger = getStreamingTrigger
 
     val timeout = getTimeout
     val mode    = config.getString("Mode")
     val options = Try(getOptions).getOrElse(Map())
 
-    val name = Try(config.getString("Name")).toOption
-
     KafkaOutput(
-      brokers,
-      topic,
+      name,
       trigger,
       timeout,
       mode,
       options,
-      config,
-      name
+      config
     )
   }
 }

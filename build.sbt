@@ -128,7 +128,9 @@ lazy val kafka = (project in file("kafka"))
     commonSettings,
     name := "dataio-kafka",
     libraryDependencies ++= Seq(
-      "org.apache.spark" %% "spark-sql-kafka-0-10" % sparkVersion
+      "org.apache.spark" %% "spark-sql-kafka-0-10" % sparkVersion,
+      "io.github.embeddedkafka" %% "embedded-kafka" % "3.5.1" % Test,
+      "io.github.embeddedkafka" %% "embedded-kafka-streams" % "3.5.1" % Test
     )
   )
   .dependsOn(core, testutils % Test)
@@ -177,4 +179,4 @@ lazy val root = (project in file("."))
     name := "dataio",
     publish / skip := true
   )
-  .aggregate(core, test)
+  .aggregate(core, test, kafka)

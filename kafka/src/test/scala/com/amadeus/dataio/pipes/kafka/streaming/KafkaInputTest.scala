@@ -1,139 +1,53 @@
 package com.amadeus.dataio.pipes.kafka.streaming
 
-import com.amadeus.dataio.testutils.JavaImplicitConverters._
-import com.typesafe.config.ConfigFactory
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
+import com.amadeus.dataio.testutils.SparkSpec
+import io.github.embeddedkafka.Codecs.stringSerializer
+import io.github.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
+import org.apache.spark.sql.streaming.Trigger
 
-class KafkaInputTest extends AnyWordSpec with Matchers {
+class KafkaInputTest extends SparkSpec with EmbeddedKafka {
+  case class InputSchema(year: Int, city: String)
 
-  "KafkaInput" should {
-    "be initialized according to configuration" in {
+  behavior of "KafkaInput.read"
 
-      val config = ConfigFactory.parseMap(
-        Map(
-          "Input" -> Map(
-            "Type"    -> "com.amadeus.dataio.pipes.kafka.streaming.KafkaInput",
-            "Name"    -> "my-test-kafka",
-            "Brokers" -> "bktv001:9000, bktv002.amadeus.net:8000",
-            "Topic"   -> "test.topic",
-            "TrustStorePath" ->  "/dbfs/FileStore/Shared/rcmbi/DEV/security/Truststore.jks",
-            "SecretsScope" ->  "rcmbi-app-kv",
-            "KafkaCertSecret" ->  "bkps29-kafka-cert-pwd",
-            "Options" -> Map(
-              "failOnDataLoss"                       -> "false",
-              "maxOffsetsPerTrigger"                 -> "20000000",
-              "startingOffsets"                      -> "earliest",
-              "\"kafka.security.protocol\""          -> "SASL_PLAINTEXT",
-              "\"kafka.sasl.kerberos.service.name\"" -> "kafka"
-            )
-          )
-        )
+  it should "read data from embedded Kafka using Spark Structured Streaming" in sparkTest { implicit spark =>
+    val topic = "test-input-topic"
+    val jsonInput = """{"year":2025,"city":"Nice"}"""
+
+    withRunningKafka {
+      publishToKafka(topic, jsonInput)
+
+      // KafkaInput expects options
+      val input = KafkaInput(
+        name = "test",
+        options = Map(
+          "kafka.bootstrap.servers" -> "localhost:6001",
+          "subscribe" -> topic,
+          "startingOffsets" -> "earliest"
+        ),
+        repartitionExprs = None,
+        repartitionNum = None,
+        coalesce = None
       )
 
-      val kafkaStreamInput = KafkaInput.apply(config.getConfig("Input"))
+      val df = input.read(spark)
 
-      kafkaStreamInput.brokers shouldEqual "bktv001:9000, bktv002.amadeus.net:8000"
-      kafkaStreamInput.topic shouldEqual Some("test.topic")
-      kafkaStreamInput.pattern shouldBe None
-      kafkaStreamInput.assign shouldBe None
-      kafkaStreamInput.options shouldEqual Map(
-        "failOnDataLoss"                   -> "false",
-        "maxOffsetsPerTrigger"             -> "20000000",
-        "startingOffsets"                  -> "earliest",
-        "kafka.security.protocol"          -> "SASL_PLAINTEXT",
-        "kafka.sasl.kerberos.service.name" -> "kafka"
-      )
-    }
+      val query = df.writeStream
+        .format("memory")
+        .queryName("kafka_test")
+        .outputMode("append")
+        .trigger(Trigger.AvailableNow)
+        .start()
 
-    "be initialized with all optional properties" in {
+      query.processAllAvailable()
+      query.awaitTermination()
+      query.exception.foreach(throw _)
 
-      val config = ConfigFactory.parseMap(
-        Map(
-          "Input" -> Map(
-            "Type"                 -> "com.amadeus.dataio.pipes.kafka.streaming.KafkaInput",
-            "Name"                 -> "my-test-kafka",
-            "Brokers"              -> "bktv001:9000, bktv002.amadeus.net:8000",
-            "Topic"                -> "test.topic",
-            "RepartitioningColumn" -> "repCol",
-            "RepartitioningNumber" -> "100",
-            "Coalesce"             -> "10",
-            "Options" -> Map(
-              "failOnDataLoss"                       -> "false",
-              "maxOffsetsPerTrigger"                 -> "20000000",
-              "startingOffsets"                      -> "earliest",
-              "\"kafka.security.protocol\""          -> "SASL_PLAINTEXT",
-              "\"kafka.sasl.kerberos.service.name\"" -> "kafka"
-            )
-          )
-        )
-      )
+      val resultDf = spark.sql("select * from kafka_test")
+      val resultString = resultDf.selectExpr("CAST(value AS STRING)").collect().map(_.getString(0)).head
 
-      val kafkaStreamInput = KafkaInput.apply(config.getConfig("Input"))
-
-      kafkaStreamInput.brokers shouldEqual "bktv001:9000, bktv002.amadeus.net:8000"
-      kafkaStreamInput.topic shouldEqual Some("test.topic")
-      kafkaStreamInput.pattern shouldBe None
-      kafkaStreamInput.assign shouldBe None
-      kafkaStreamInput.coalesce.get shouldEqual 10
-      kafkaStreamInput.repartitionExprs.get shouldEqual "repCol"
-      kafkaStreamInput.repartitionNum.get shouldEqual 100
-      kafkaStreamInput.options shouldEqual Map(
-        "failOnDataLoss"                   -> "false",
-        "maxOffsetsPerTrigger"             -> "20000000",
-        "startingOffsets"                  -> "earliest",
-        "kafka.security.protocol"          -> "SASL_PLAINTEXT",
-        "kafka.sasl.kerberos.service.name" -> "kafka"
-      )
-    }
-
-
-    "be reading Pattern, Topic and Assign" in {
-
-      val config = ConfigFactory.parseMap(
-        Map(
-          "Input" -> Map(
-            "Type"                 -> "com.amadeus.dataio.pipes.kafka.streaming.KafkaInput",
-            "Name"                 -> "my-test-kafka",
-            "Brokers"              -> "bktv001:9000, bktv002.amadeus.net:8000",
-            "Topic"                -> "test.topic",
-            "TrustStorePath" -> "/dbfs/FileStore/Shared/rcmbi/DEV/security/Truststore.jks",
-            "SecretsScope" -> "rcmbi-app-kv",
-            "KafkaCertSecret" -> "bkps29-kafka-cert-pwd",
-            "Pattern"              -> "test.pattern",
-            "Assign"               -> "test.assign",
-            "RepartitioningColumn" -> "repCol",
-            "RepartitioningNumber" -> "100",
-            "Coalesce"             -> "10",
-            "Options" -> Map(
-              "failOnDataLoss"                       -> "false",
-              "maxOffsetsPerTrigger"                 -> "20000000",
-              "startingOffsets"                      -> "earliest",
-              "\"kafka.security.protocol\""          -> "SASL_PLAINTEXT",
-              "\"kafka.sasl.kerberos.service.name\"" -> "kafka"
-            )
-          )
-        )
-      )
-
-      val kafkaStreamInput = KafkaInput.apply(config.getConfig("Input"))
-
-      kafkaStreamInput.brokers shouldEqual "bktv001:9000, bktv002.amadeus.net:8000"
-      kafkaStreamInput.topic shouldEqual Some("test.topic")
-      kafkaStreamInput.pattern shouldEqual Some("test.pattern")
-      kafkaStreamInput.assign shouldEqual Some("test.assign")
-      kafkaStreamInput.coalesce.get shouldEqual 10
-      kafkaStreamInput.repartitionExprs.get shouldEqual "repCol"
-      kafkaStreamInput.repartitionNum.get shouldEqual 100
-      kafkaStreamInput.options shouldEqual Map(
-        "failOnDataLoss"                   -> "false",
-        "maxOffsetsPerTrigger"             -> "20000000",
-        "startingOffsets"                  -> "earliest",
-        "kafka.security.protocol"          -> "SASL_PLAINTEXT",
-        "kafka.sasl.kerberos.service.name" -> "kafka"
-      )
-
-
+      resultDf should notBeEmpty
+      resultString should equal(jsonInput)
     }
   }
 }
