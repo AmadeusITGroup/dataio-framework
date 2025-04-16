@@ -79,7 +79,12 @@ object KafkaOutput {
     val trigger = getStreamingTrigger
 
     val timeout = getTimeout
-    val mode    = config.getString("Mode")
+    val mode = Try {
+      config.getString("mode")
+    } getOrElse {
+      throw new Exception("Missing required `mode` field in configuration.")
+    }
+
     val options = Try(getOptions).getOrElse(Map())
 
     KafkaOutput(

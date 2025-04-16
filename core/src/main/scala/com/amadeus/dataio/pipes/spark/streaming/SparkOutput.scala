@@ -108,7 +108,11 @@ object SparkOutput {
     val trigger = getStreamingTrigger
     val timeout = getTimeout
 
-    val mode = config.getString("mode")
+    val mode = Try {
+      config.getString("mode")
+    } getOrElse {
+      throw new Exception("Missing required `mode` field in configuration.")
+    }
 
     SparkOutput(
       name,

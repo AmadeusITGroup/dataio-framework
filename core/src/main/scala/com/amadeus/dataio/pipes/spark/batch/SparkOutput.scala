@@ -105,8 +105,11 @@ object SparkOutput {
     val repartitionByRangeColumn    = getRepartitionByRangeExprs
     val sortWithinPartitionsColumns = getSortWithinPartitionsExprs
 
-    // default to "append" to avoid deleting datasets by mistake
-    val mode = Try(config.getString("mode")).getOrElse("append")
+    val mode = Try {
+      config.getString("mode")
+    } getOrElse {
+      throw new Exception("Missing required `mode` field in configuration.")
+    }
 
     SparkOutput(
       name,
