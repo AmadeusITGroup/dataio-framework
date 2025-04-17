@@ -57,7 +57,7 @@ class OutputHandlerTest extends AnyWordSpec with Matchers {
     "return my streaming SparkInput and my batch SparkInput " in {
       val config = ConfigFactory.parseMap(
         Map(
-          "Output" -> Seq(
+          "output" -> Seq(
             Map(
               "type"         -> "com.amadeus.dataio.pipes.spark.streaming.SparkOutput",
               "name"         -> "my-streaming-spark",
@@ -77,17 +77,20 @@ class OutputHandlerTest extends AnyWordSpec with Matchers {
               "type"   -> "com.amadeus.dataio.pipes.spark.batch.SparkOutput",
               "name"   -> "my-batch-spark",
               "path"   -> "output/fileBatchOutputConfigTest",
-              "format" -> "parquet"
+              "format" -> "parquet",
+              "mode" -> "append"
             )
           )
         )
       )
 
-      val configCollection = ConfigNodeCollection("Output", config)
+      val configCollection = ConfigNodeCollection("output", config)
       val outputHandler    = OutputHandler(configCollection)
 
       var batchStorageFound     = false
       var streamingStorageFound = false
+
+      outputHandler.getAll.foreach(println)
 
       for (output <- outputHandler.getAll) {
         output match {
