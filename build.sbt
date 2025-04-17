@@ -179,4 +179,4 @@ lazy val root = (project in file("."))
     name := "dataio",
     publish / skip := true
   )
-  .aggregate(core, test, kafka)
+  .aggregate(core, test, kafka, snowflake)

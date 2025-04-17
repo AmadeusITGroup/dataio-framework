@@ -8,9 +8,6 @@ links:
     url: https://docs.snowflake.com/en/user-guide/spark-connector-use#using-the-connector-in-scala
 
 fields:
-  - name: Options
+  - name: options
     description: Snowflake options to specify such as key = value pairs. These options are then passed as option to the Spark connector for Snowflake
-    example: Options { Database = "example_database"
-      Schema = "example_schema"
-      ...
-      }
+    example: options {"sfDatabase" = "my_db" }
