@@ -8,10 +8,11 @@ nav_order: 2
 
 In some cases (e.g. streaming, reading JSON or CSV inputs), defining a schema is a good practice as it will improve the performances by skipping the schema inference step.
 
-The Data I/O gives the possibility to specify a schema when configuring an input. To do so you have to:
+The Data I/O gives the possibility to call the Spark API's schema() method by specifying a schema when configuring an
+input. To do so you have to:
 
 * Create a case class which represents the schema,
-* Specify the Schema parameter for the Input in the configuration file,
+* Specify the `schema` parameter for the `input` in the configuration file,
 * Register your case class in the `SchemaRegistry` in the main function of your program.
 
 ## Creating a schema
@@ -42,12 +43,13 @@ case class ComplexQuery(queryName: String, queryFilters: Seq[QueryFilter], date:
 
 ## Selecting the Schema
 
-To select a schema, you need to add the parameter Schema and specify the fully-qualified name of the case class to the corresponding input node in your configuration file:
+To select a schema, you need to add the `schema` field and specify the fully-qualified name of the case class to the
+corresponding input node in your configuration file:
 
-```scala
-Input {
-    ...
-    Schema  = myproject.models.ComplexQuery
+```hocon
+input {
+  (...)
+  schema = myproject.models.ComplexQuery
 }
 ```
 

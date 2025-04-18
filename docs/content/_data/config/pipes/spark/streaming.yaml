@@ -1,0 +1,18 @@
+input:
+  type: com.amadeus.dataio.pipes.spark.streaming.StorageInput
+
+output:
+  type: com.amadeus.dataio.pipes.spark.streaming.StorageOutput
+  fields:
+    - name: trigger
+      mandatory: "No"
+      description: Sets the trigger for the stream query. Can be AvailableNow, Continuous or empty. Controls the trigger() Spark function. In case no Trigger is defined, will set a ProcessingTime trigger.
+      example: trigger = "AvailableNow"
+    - name: duration
+      mandatory: "No"
+      description: It is used in the ProcessingTime trigger.
+      example: duration = "60 seconds"
+    - name: timeout
+      mandatory: "Yes"
+      description: Controls the amount of time before returning from the streaming query, in hours.
+      example: timeout = 24

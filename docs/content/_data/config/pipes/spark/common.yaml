@@ -1,0 +1,37 @@
+name: spark
+description: Allows the use of the default Spark I/O features in batch and streaming.
+
+code_directory: spark
+
+links:
+  - name: Schema definition
+    url: /configuration/schema-definitions.md
+
+fields:
+  - name: path
+    description: The directory where the data is stored. Note that you may rely on <a href="/configuration/paths.html">path templatization</a>.
+    example: path = "hdfs://path/to/data"
+  - name: table
+    description: Specifies the table name for reading data, particularly useful when using Unity Catalog.
+    example: table = "myproject.mytable"
+  - name: format
+    description: The format to use to read the data
+    example: format = "csv"
+    default: "The value is set as default in Spark configuration: spark.sql.sources.default"
+  - name: schema
+    description: The schema of the input data. See the <a href="/configuration/schema-definitions.html">schema definitions page</a> for more information.
+    example: schema = "myproject.models.MySchema"
+  - name: date_filter
+    description: Pre-filter the input to focus on a specific date range.
+    example: See the <a href="/configuration/date-filters.html">date filters page</a> for more information.
+  - name: repartition
+    description: Matches the Spark Dataset repartition function, either by number, expressions or both. One argument, either `exprs` or `num`, is mandatory.
+    example: repartition { num = 10, exprs = "upd_date" }
+  - name: coalesce
+    description: Matches the Spark Dataset coalesce function.
+    example: coalesce = 10
+  - name: options
+    description: Spark options, as key = value pairs. The list of available options is available in the official <a href="https://spark.apache.org/docs/3.5.0/api/java/org/apache/spark/sql/DataFrameReader.html" target="_blank">Spark API documentation</a> for the DataFrameReader
+    example: options { header = true  }
+
+fields_warning: The date_filter field is never mandatory, but be aware that omitting it could result in processing years of data.

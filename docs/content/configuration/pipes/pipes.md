@@ -5,25 +5,24 @@ parent: Configuration
 has_children: true
 nav_order: 10
 fields: 
-    - name: Name
+    - name: name
+      mandatory: "Yes"
       description: The name of the pipe, that can be used to access it from the HandlerAccessor.
-      example: Name = "my-input"
-    - name: Type
+      example: name = "my-input"
+    - name: type
       mandatory: "Yes"
       description: The fully qualified name of the class to use as pipe (Input or Output).
-      example: Type = "com.amadeus.dataio.pipes.spark.batch.SparkInput"
+      example: type = "com.amadeus.dataio.pipes.spark.batch.SparkInput"
 ---
 # Pipes
 
 Pipes in the Data I/O framework are responsible for handling the reading and writing of data within your pipeline. They provide a convenient and configurable way to interact with different data sources and destinations.
 
 # Common Fields
-All pipes have access to at least two fields: Name and Type.
+
+All pipes have access to at least two fields: `name` and `type`.
 
 {% include fields_table.md fields=page.fields %}
-
-Although the name is not mandatory, it is highly recommended to specify it unless you are using a specific type of processor that automatically fetches pipes by indexes, rather than names (e.g. [Transformer](../../writing-processors.html#transformer-trait)).
-{: .warning}
 
 ## Batch and Streaming Inputs/Outputs
 

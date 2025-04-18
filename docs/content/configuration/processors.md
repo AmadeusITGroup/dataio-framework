@@ -12,14 +12,12 @@ The Data I/O framework allows you to configure and define your data processors i
 
 To configure a processor, you need to define it in the application configuration file using the following syntax:
 
-```scala
-Processing {
-  Type = "gettingstarted.DuplicatesDropper"
-  CustomValue1 = "june"
-  CustomValue2 = "2023"
+```hocon
+processing {
+  type = "gettingstarted.DuplicatesDropper"
+  custom_value_1 = "june"
+  custom_value_2 = "2023"
 }
 ```
-
-The naming convention of your custom configuration fields must follow the Typesafe naming conventions
 
 To see how to access these values in your processors code, see the [dedicated page](../writing-processors.html#custom-configuration).

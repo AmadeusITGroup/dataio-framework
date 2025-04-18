@@ -6,52 +6,52 @@ nav_order: 3
 placeholders:
 - pattern: "%{from} %{to}"
   fields:
-  - name: Template
+  - name: template
     mandatory: "Yes"
     description: The path template to fill.
-    example: Template = file_%{from}_%{to}.csv
-  - name: Date
+    example: template = file_%{from}_%{to}.csv
+  - name: date_reference
     mandatory: "Yes"
     description: The date to use when detemplatizing.
-    example: Date = "2022-01-01"
-  - name: DateOffset
+    example: date_reference = "2022-01-27"
+  - name: date_offset
     mandatory: "Yes"
     description: The offset to use, with respect to Date when detemplatizing.
-    example: DateOffset = "+5D"
-  - name: DatePattern
+    example: date_offset = "+5D"
+  - name: date_pattern
     mandatory: "Yes"
     description: The output format to use when detemplatizing. It will apply to both %{from} and %{to}, if they are both present.
-    example: DatePattern = "yyyyMMdd"
-- pattern: "%{datetime}"
+    example: date_pattern = "yyyyMMdd"
+- pattern: "%{date}"
   fields:
-  - name: Template
+  - name: template
     mandatory: "Yes"
     description: The path template to fill.
-    example: Template = file_%{datetime}.csv
-  - name: Date
+    example: template = file_%{datetime}.csv
+  - name: date
     description: The date to use when detemplatizing.
-    example: Date = "2022-01-01"
-    default: Current datetime
-  - name: DatePattern
+    example: date = "2022-01-27"
+    default: Current date
+  - name: date_pattern
     description: The output format to use when detemplatizing.
-    example: DatePattern = "yyyyMMdd"
-    default: "yyyy-MM-dd'T'HH:mm:ss.SSS"
+    example: date_pattern = "yyyyMMdd"
+    default: "yyyyMMdd"
 - pattern: "%{year} %{month} %{day}"
   fields:
-  - name: Template
+  - name: template
     mandatory: "Yes"
     description: The path template to fill.
-    example: Template = file_%{year}.csv
-  - name: Date
+    example: template = file_%{year}.csv
+  - name: date
     description: The date to use when detemplatizing.
-    example: Date = "2022-01-01"
+    example: date = "2022-01-27"
     default: Current datetime
 - pattern: "%{uuid}"
   fields:
-  - name: Template
+  - name: template
     mandatory: "Yes"
     description: The template to fill with a random, 16-bytes long, UUID.
-    example: Template = file_%{uuid}.csv
+    example: template = file_%{uuid}.csv
 
 ---
 # Paths templatization
@@ -72,5 +72,41 @@ Some placeholders may only make sense for outputs configuration, even though the
 
 {% endfor %}
 
+## Examples
 
+Here's an example of input using the `path` feature without templatization:
 
+```hocon
+(...)
+
+output {
+  name = "my-output"
+  type = "com.amadeus.dataio.pipes.spark.batch.SparkOutput"
+  format = "csv"
+  path = "hdfs://path/to/data/static.csv"
+}
+
+(...)
+```
+
+Here's an example of input using the `path` feature with templatization:
+
+````hocon
+(...)
+
+output {
+  name = "my-output"
+  type = "com.amadeus.dataio.pipes.spark.batch.SparkOutput"
+  format = "csv"
+  path {
+    template = "hdfs://path/to/data/file_%{from}_%{to}.csv"
+    date_reference = "2022-01-20"
+    date_offset = "-1D"
+    date_pattern = "yyyyMMdd"
+  }
+}
+
+(...)
+````
+
+Which will result in the following output path: `hdfs://path/to/data/file_20220119_20220120.csv`

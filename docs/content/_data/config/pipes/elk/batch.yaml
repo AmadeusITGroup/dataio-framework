@@ -1,8 +1,0 @@
-output:
-  type: com.amadeus.dataio.pipes.elk.batch.ElkOutput
-  fields:
-  - name: Mode
-    mandatory: "Yes"
-    description: The Spark SQL write mode.
-    example: Mode = "overwrite"
-    default: error
