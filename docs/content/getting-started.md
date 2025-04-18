@@ -17,11 +17,6 @@ nav_order: 2
 
 ## Installation
 
-Data I/O was built and tested with Spark 3.2.1/3.3.2/3.4.1 and Scala 2.12. Support for prior versions is not guaranteed.
-{: .warning}
-
-Published releases are available on GitHub Packages, in the AmadeusITGroup repository.
-
 Using Maven:
 
 ```xml
@@ -32,6 +27,8 @@ Using Maven:
 </dependency>
 ```
 
+Published releases are available on GitHub Packages, in the AmadeusITGroup repository.
+{: .info}
 
 ## Minimal Example
 
@@ -68,7 +65,8 @@ case class DuplicatesDropper() extends Processor {
 
 ### The Configuration File
 
-The configuration file contains the definition of the data processor your application will run, as well as inputs, outputs and distributors. In our case, we only need one input, and one output.
+The configuration file contains the definition of the data processor your application will run, as well as inputs and
+outputs. In our case, we only need one input, and one output.
 
 ```scala
 Processing {

@@ -30,12 +30,11 @@ In your code, pipes are closely related to Spark's reading and writing capabilit
 No matter where data comes from or goes, each input pipe returns a DataFrame and each output pipe receives a DataFrame to write.
 {: .important}
 
-### Distributors
-**Distributors** in Data I/O are responsible for handling the distribution of files after the processing is complete. They provide methods and utilities to send processed data to different destinations, such as email or other custom channels. By incorporating **distributors** into your pipeline, you can automate the distribution process, ensuring that the transformed data reaches the intended recipients or systems seamlessly. Data I/O offers a flexible and extensible architecture that allows you to define and configure **distributors** based on your specific distribution needs.
-
-
 ### HandlerAccessor
-The `HandlerAccessor` plays a crucial role in the pipeline by providing access to different handlers responsible for interacting with **pipes** and **distributors**. Indeed, through the `HandlerAccessor`, you can access the input, output and distribution handlers, enabling seamless integration and interaction with the corresponding components defined in your configuration file.
+
+The `HandlerAccessor` plays a crucial role in the pipeline by providing access to different handlers responsible for
+interacting with **pipes**. Indeed, through the `HandlerAccessor`, you can access the input/output handlers, enabling
+seamless integration and interaction with the corresponding components defined in your configuration file.
 
 The `HandlerAccessor` is injected in the run method of your **processor**.
 ```scala
