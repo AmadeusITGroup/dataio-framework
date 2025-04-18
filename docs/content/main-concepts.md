@@ -18,16 +18,27 @@ This page provides an overview of the key aspects that form the foundation of th
 
 ## Building Blocks
 ### Pipeline
-The **pipeline** is the central component of the Data I/O framework. Its responsible for instantiating the components defined in the configuration and running the **processor**. You can easily define and configure your **pipeline** using the provided configuration file, allowing you to focus on the essential task of data transformation.
+
+The **pipeline** is the central component of the Data I/O framework. It is responsible for instantiating the components
+defined in the configuration and running the **processor**. You can easily define and configure your **pipeline** using
+the provided configuration file, allowing you to focus on the essential task of data transformation.
 
 For more information about how to configure your applications, visit the [configuration page](configuration/configuration.html).
 
 ### Pipes
-**Pipes** are the fundamental components of the Data I/O framework, representing the sources and destinations of data within the pipeline. **Inputs** handle the reading of data from various sources, while **outputs** handle the writing of transformed data to different destinations. By configuring inputs and outputs in the provided configuration file, you can define the specific data sources and destinations for your ETL pipelines. Data I/O provides flexible and extensible options for handling various file formats, databases, and streaming data sources.
 
-In your code, pipes are closely related to Spark's reading and writing capabilities. When configuring your application, you'll specify the source or destination of your data, and Data I/O will use Spark's underlying APIs to perform the actual reading and writing.
+**Pipes** are the fundamental components of the Data I/O framework, representing the sources and destinations of data
+within the pipeline. **Inputs** handle the reading of data from various sources, while **outputs** handle the writing of
+transformed data to different destinations. By configuring inputs and outputs in the provided configuration file, you
+can define the specific data sources and destinations for your ETL pipelines. Data I/O provides flexible and extensible
+options for handling various file formats, databases, and streaming data sources.
 
-No matter where data comes from or goes, each input pipe returns a DataFrame and each output pipe receives a DataFrame to write.
+In your code, pipes are closely related to Spark's reading and writing capabilities. When configuring your application,
+you'll specify the source or destination of your data, and Data I/O will use Spark's underlying APIs to perform the
+actual reading and writing.
+
+No matter where data comes from or goes, each input pipe returns a DataFrame and each output pipe receives a DataFrame
+to write.
 {: .important}
 
 ### HandlerAccessor
@@ -48,9 +59,13 @@ case class MyDataProcessor() extends Processor {
 ### Processors
 **Processors** play a vital role in the Data IO framework by encapsulating the data transformation logic within the pipeline. A **processor** is a custom class that you define to implement the specific data processing steps required for your ETL pipelines. It represents a single stage or operation in the pipeline and is responsible for manipulating the data according to your business requirements.
 
-When the pipeline is executed, the **Processor** takes control and executes the run method, which contains the custom transformation logic. Inside the run method, you can access and manipulate the data using the provided `HandlerAccessor`, which provides access to the InputHandler, OutputHandler, and DistributionHandler.
+When the pipeline is executed, the run method of the **Processor** is executed, which contains the custom transformation
+logic. Inside, you can access and manipulate the data using the provided `HandlerAccessor`, which provides access to the
+InputHandler and OutputHandler.
 
-Inside your **Processor**, you can easily modularize and organize your data transformation steps, making the pipeline more maintainable. Each function in the **processor** can be designed to handle a specific data processing task, such as cleaning, aggregating, joining, or any other required transformations.
+Inside your **Processor**, you can easily modularize and organize your data transformation steps, making the pipeline
+more testable and maintainable. Each function in the **processor** can be designed to handle a specific data processing
+task, such as cleaning, aggregating, joining, or any other required transformations.
 
 ```scala
 case class MyDataProcessor() extends Processor {
@@ -87,7 +102,7 @@ pipeline-->|1 reads and parses|conf
 accessor(HandlerAccessor)
 pipeline-->|2 creates|accessor
 
-pipes(Pipes and Distributors)
+pipes(Pipes)
 accessor-->|3 creates|pipes
 accessor-. exposes .->pipes
 
