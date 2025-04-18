@@ -27,7 +27,7 @@ Using Maven:
 </dependency>
 ```
 
-Published releases are available on GitHub Packages, in the AmadeusITGroup repository.
+Published releases are available on GitHub Packages, in the Data I/O repository.
 {: .info}
 
 ## Minimal Example
@@ -38,13 +38,14 @@ To make it work, you only need to write three components:
 
 * A data processor, which contains the transformations to operate on the data,
 * A configuration file, which contains information about the processor to use, the inputs, outputs, etc.,
-* A data pipeline, which loads the configuration file and runs the data processor with the configuration that you defined.
+* A Pipeline object, which loads the configuration file and runs the data processor with the configuration that you
+  defined.
 
 ### The Data Processor
 
 Every transformation made using Data I/O must be written in a data processor, a class that you create by extending the Processor trait or one of its sub-classes.
 
-Data transformations happen in the `run` method, which is used by the data pipeline to start the data processing.
+Data transformations happen in the `run` method, which is used by the Pipeline to start the data processing.
 
 ```scala
 package gettingstarted
@@ -68,32 +69,33 @@ case class DuplicatesDropper() extends Processor {
 The configuration file contains the definition of the data processor your application will run, as well as inputs and
 outputs. In our case, we only need one input, and one output.
 
-```scala
-Processing {
-    Type = "gettingstarted.DuplicatesDropper"
+```hocon
+processing {
+  type = "gettingstarted.DuplicatesDropper"
 }
- 
-Input {
-    Name = "my-input"
-    Type = "com.amadeus.dataio.pipes.spark.batch.SparkInput"
-    Path = "/path/my-input"
-    Format = "csv"
-    Options {
+
+input {
+  name = "my-input"
+  type = "com.amadeus.dataio.pipes.spark.batch.SparkInput"
+  path = "/path/my-input"
+  format = "csv"
+  options {
         header = "true"
     }
 }
- 
-Output {
-    Name = "my-output"
-    Type = "com.amadeus.dataio.pipes.spark.batch.SparkOutput"
-    Path = "/path/my-output"
-    Format = "parquet"
+
+output {
+  name = "my-output"
+  type = "com.amadeus.dataio.pipes.spark.batch.SparkOutput"
+  path = "/path/my-output"
+  format = "parquet"
 }
 ```
 
 ### The Data Pipeline
 
-Now that we're ready, it's time create our pipeline. To do so, we'll use the configuration file.
+Now that we're ready, it's time create our Pipeline and run the Processor. To do so, we'll use the configuration file
+and a Spark session.
 
 ```scala
 package gettingstarted
