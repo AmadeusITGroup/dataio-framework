@@ -77,7 +77,9 @@ You can also define your own processor traits by extending the `Processor` trait
 
 ## Custom Configuration
 
-You can access custom configuration options directly within your processor code. The custom configuration options defined under the Processing configuration node can be accessed through the `config` member variable in your processor class.
+You can access custom configuration options directly within your processor code. The custom configuration options
+defined under the `processing` configuration node can be accessed through the `config` member variable in your processor
+class.
 
 Here's an example of how to access custom configuration values within your processor:
 
@@ -85,8 +87,8 @@ Here's an example of how to access custom configuration values within your proce
 case class MyDataProcessor() extends Processor {
   override def run(handlers: HandlerAccessor)(implicit spark: SparkSession): Unit = {
     // Access custom configuration values
-    val customValue1 = config.getString("CustomValue1")
-    val customValue2 = config.getInt("CustomValue2")
+    val customValue1 = config.getString("custom_value_1")
+    val customValue2 = config.getInt("custom_value_2")
 
     // Use the custom configuration values in your data transformation logic
     // ...
@@ -94,13 +96,14 @@ case class MyDataProcessor() extends Processor {
 }
 ```
 
-In the above example, `CustomValue1` and `CustomValue2` are custom configuration values defined under the Processing configuration node in your configuration file: 
+In the above example, `custom_value_1` and `custom_value_1` are custom configuration values defined under
+the `processing` configuration node in your configuration file:
 
-```scala
-Processing {
-  Type = com.mycompany.MyDataProcessor
-  CustomValue1 = "june"
-  CustomValue2 = "2023"
+```hocon
+processing {
+  type = com.mycompany.MyDataProcessor
+  custom_value_1 = "june"
+  custom_value_2 = "2023"
 }
 ```
 
