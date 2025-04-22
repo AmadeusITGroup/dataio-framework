@@ -25,7 +25,7 @@ class DataIOTestHelperTest extends SparkSpec with DataIOTestHelper {
     thrownEx.getMessage should include("No `processing` node found in config")
   }
 
-  behavior of "createProcessor"
+  behavior of "createProcessor(configPath)"
   it should "create a processor from config" in {
     val configPath: String = getClass.getResource("/DataIOTestHelper/createProcessor/1_processor/app.conf").getPath
     val processor          = createProcessor(configPath)
@@ -54,5 +54,18 @@ class DataIOTestHelperTest extends SparkSpec with DataIOTestHelper {
       createProcessor(configPath)
     }
     thrownEx.getMessage should include("Failed to instantiate processor from config")
+  }
+
+  behavior of "createProcessor[T]()"
+  it should "instantiate a processor using its empty constructor" in {
+    val processor = createProcessor[DummyTransformer]()
+    noException should be thrownBy processor
+    processor shouldBe a[DummyTransformer]
+  }
+
+  it should "fail of the given class is not a Processor" in {
+    intercept[Exception] {
+      createProcessor[String]()
+    }
   }
 }

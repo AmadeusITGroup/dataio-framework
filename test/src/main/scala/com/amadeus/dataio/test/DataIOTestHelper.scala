@@ -2,12 +2,13 @@ package com.amadeus.dataio.test
 
 import com.amadeus.dataio.config.PipelineConfig
 import com.amadeus.dataio.core.handler.HandlerAccessor
-import com.amadeus.dataio.core.{Logging, Output}
+import com.amadeus.dataio.core.{InstantiationHelper, Logging, Output}
 import com.amadeus.dataio.pipes.spark.batch.SparkInput
 import com.amadeus.dataio.processing.Processor
 import com.typesafe.config.ConfigValueFactory
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
+import scala.reflect.runtime.universe._
 import scala.util.{Failure, Success, Try}
 
 /** A trait that provides helper methods for testing data input and output operations in a Spark-based pipeline.
@@ -38,9 +39,18 @@ trait DataIOTestHelper extends Logging {
     }
   }
 
+  /** Creates a `Processor` instance of the specified type `T`.
+   *
+   * @tparam T The type of the `Processor` to create.
+   * @return A new instance of the specified `Processor` type.
+   */
+  def createProcessor[T]()(implicit tag: TypeTag[T]): Processor = {
+    val typeName = tag.tpe.typeSymbol.fullName
+    InstantiationHelper.instantiateWithEmptyConstructor[Processor](typeName)
+  }
+
   /** Creates `Handler` instances based on the configuration from the given path.
     *
-    * @param configPath The path to the configuration file.
     * @return The created `HandlerAccessor` instance.
     */
   def createHandlers(configPath: String): HandlerAccessor = {
