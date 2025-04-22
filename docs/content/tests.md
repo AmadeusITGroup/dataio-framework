@@ -103,6 +103,7 @@ This creates an instance of your processor class using a default empty config. I
 test does not depend on any external configuration fields.
 
 - With a config file:
+
 ```scala
 val processor = createProcessor("/path/to/test/app.conf")
 ```
