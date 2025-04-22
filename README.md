@@ -1,8 +1,8 @@
 # Data I/O
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Spark](https://img.shields.io/badge/Spark-3.4.1-blue)](https://spark.apache.org/releases/spark-release-3-4-1.html) 
-[![Scala](https://img.shields.io/badge/Scala-2.12.12-red)](https://www.scala-lang.org/) 
+[![Spark](https://img.shields.io/badge/Spark-3.5.0-blue)](https://spark.apache.org/releases/spark-release-3-4-1.html)
+[![Scala](https://img.shields.io/badge/Scala-2.12.15-red)](https://www.scala-lang.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)][contributing]
 
 Data I/O is an open source project that provides a flexible and scalable framework for data input and output operations in Spark applications. It offers a set of powerful tools and abstractions to simplify and streamline data processing pipelines.
