@@ -3,3 +3,8 @@ input:
 
 output:
   type: com.amadeus.dataio.pipes.spark.batch.StorageOutput
+  fields:
+    - name: mode
+      mandatory: "Yes"
+      description: Specifies the writing behavior when data or table already exists.
+      example: mode = "append"
