@@ -16,3 +16,7 @@ output:
       mandatory: "Yes"
       description: Controls the amount of time before returning from the streaming query, in hours.
       example: timeout = 24
+    - name: mode
+      mandatory: "Yes"
+      description: Specifies the writing behavior when data or table already exists.
+      example: mode = "append"
