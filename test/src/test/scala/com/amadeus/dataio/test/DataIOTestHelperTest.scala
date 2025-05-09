@@ -62,10 +62,4 @@ class DataIOTestHelperTest extends SparkSpec with DataIOTestHelper {
     noException should be thrownBy processor
     processor shouldBe a[DummyTransformer]
   }
-
-  it should "fail of the given class is not a Processor" in {
-    intercept[Exception] {
-      createProcessor[String]()
-    }
-  }
 }

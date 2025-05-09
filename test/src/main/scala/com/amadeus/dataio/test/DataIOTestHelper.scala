@@ -44,9 +44,9 @@ trait DataIOTestHelper extends Logging {
    * @tparam T The type of the `Processor` to create.
    * @return A new instance of the specified `Processor` type.
    */
-  def createProcessor[T]()(implicit tag: TypeTag[T]): Processor = {
+  def createProcessor[T <: Processor]()(implicit tag: TypeTag[T]): T = {
     val typeName = tag.tpe.typeSymbol.fullName
-    InstantiationHelper.instantiateWithEmptyConstructor[Processor](typeName)
+    InstantiationHelper.instantiateWithEmptyConstructor[T](typeName)
   }
 
   /** Creates `Handler` instances based on the configuration from the given path.
