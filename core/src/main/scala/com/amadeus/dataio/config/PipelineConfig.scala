@@ -27,13 +27,13 @@ case object PipelineConfig extends Logging {
     * @return A new PipelineConfig with the extracted configuration.
     */
   def apply(config: Config): PipelineConfig = {
-
     val info       = Try(config.getConfig("info")).toOption
     val processing = ConfigNodeCollection("processing", config)
-    if (processing.nodes.isEmpty)
-      logger.warn("No `processing` configuration node found.")
+    logger.info(s"Config: processing [${processing.nodes.mkString(",")}] ")
     val inputConfig  = ConfigNodeCollection("input", config)
+    logger.info(s"Config: input [${inputConfig.nodes.mkString(",")}] ")
     val outputConfig = ConfigNodeCollection("output", config)
+    logger.info(s"Config: output [${outputConfig.nodes.mkString(",")}] ")
 
     PipelineConfig(info, processing, inputConfig, outputConfig)
   }
