@@ -2,9 +2,7 @@ package com.amadeus.dataio.core
 
 import org.slf4j.{Logger, LoggerFactory}
 
-/** This logging trait allows you to use a logger instance even in distributed applications.
-  *
-  * You must use this feature when you create an object that is going to be used into a spark streaming application.
+/** Trait providing a lazily initialized `com.amadeus.dataio` logger for use in classes that extend it.
   *
   * Usage example:
   * {{{
@@ -18,6 +16,6 @@ import org.slf4j.{Logger, LoggerFactory}
   * }
   * }}}
   */
-trait Logging {
+private[dataio] trait Logging {
   @transient protected lazy val logger: Logger = LoggerFactory.getLogger("com.amadeus.dataio")
 }
