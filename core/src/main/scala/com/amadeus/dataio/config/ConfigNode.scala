@@ -15,7 +15,9 @@ case class ConfigNode(
     name: String,
     typeName: String,
     config: Config
-)
+) {
+  override def toString: String = s"$name; $typeName; $config"
+}
 
 object ConfigNode {
 
