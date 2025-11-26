@@ -19,5 +19,5 @@ import org.slf4j.{Logger, LoggerFactory}
   * }}}
   */
 trait Logging {
-  @transient protected lazy val logger: Logger = LoggerFactory.getLogger(getClass)
+  @transient protected lazy val logger: Logger = LoggerFactory.getLogger("com.amadeus.dataio")
 }
