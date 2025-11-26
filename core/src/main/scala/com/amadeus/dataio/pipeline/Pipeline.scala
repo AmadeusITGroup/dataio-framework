@@ -38,14 +38,13 @@ case class Pipeline(config: PipelineConfig) extends Logging {
     val handlerAccessor = HandlerAccessor(config)
 
     logger.info(s"Creating data processor.")
-    val processor = Try {
-      Processor(config.processing.nodes.head) // TODO: refactor the processing config node, having a collection is not necessary anymore
-    }.getOrElse(
+    if(config.processing.nodes.isEmpty){
       throw new Exception(
         "Can not run a data pipeline if there are no configured data processors. " +
           "If no transformation of data is required in your job, you may use com.amadeus.dataio.processing.Identity (explicitly)."
       )
-    )
+    }
+    val processor = Processor(config.processing.nodes.head)
 
     logger.info("Running data processor.")
     processor.run(handlerAccessor)
