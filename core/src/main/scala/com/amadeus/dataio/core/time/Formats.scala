@@ -6,8 +6,7 @@ import java.time.temporal.ChronoField
 import java.time.temporal.ChronoField._
 
 /**
- * Collection of [[com.amadeus.bdp.api.functions.time.Formats.LabeledFormatter]].
- * Formats are related to dates and can be used as placeholder in a [[com.amadeus.bdp.api.functions.paths.TemplatePath]].
+ * Collection of LabeledFormatter.
  *
  * @see Documentation for pattern symbols: [[https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html]]
  */
@@ -118,7 +117,7 @@ object Formats {
   val LbxSecond = LabeledFormatter("second", DateTimeFormatter.ofPattern("ss"), """(\d{2})""", Set(SECOND_OF_MINUTE))
 
   /**
-   * Set of all [[com.amadeus.bdp.api.functions.time.Formats.LabeledFormatter LabeledFormatter]] defined into [[com.amadeus.bdp.api.functions.time.Formats Formats]] object
+   * Set of all
    */
   val AllFormats: Set[LabeledFormatter] =
     Set(BasicIsoDate, IsoLocalDate, IsoLocalTime, IsoOrdinalDate, IsoWeekDate, Iso8601, IsoInstant, LbxYear, LbxMonth, LbxWeek, LbxDay, LbxHour, LbxMinute, LbxSecond)
@@ -134,7 +133,7 @@ object Formats {
   private val labelToFormatterMap = AllFormats.map(formatter => (formatter.label, formatter)).toMap
 
   /**
-   * Gets a [[com.amadeus.bdp.api.functions.time.Formats.LabeledFormatter LabeledFormatter]] from its label.
+   * Gets a LabeledFormatter from its label.
    *
    * @param label the label
    * @return an [[scala.Option Option]] containing the formatter or [[scala.None None]] if there is no formatter for the given label

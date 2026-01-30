@@ -1,6 +1,6 @@
 package com.amadeus.dataio.pipes.spark.batch
 
-import com.amadeus.dataio.core.time.DateRange
+import com.amadeus.dataio.config.fields.DateFilterConfig
 import com.amadeus.dataio.core.transformers.{Coalescer, DateFilterer, Repartitioner}
 import com.amadeus.dataio.core.{Input, Logging, SchemaRegistry}
 import com.amadeus.dataio.pipes.spark.{SparkPathSource, SparkSource, SparkSourceConfigurator, SparkTableSource}
@@ -16,16 +16,16 @@ import scala.util.Try
   * @param config Contains the Typesafe Config object that was used at instantiation to configure this entity.
   */
 case class SparkInput(
-    name: String,
-    source: Option[SparkSource] = None,
-    options: Map[String, String] = Map(),
-    dateRange: Option[DateRange] = None,
-    dateColumn: Option[Column] = None,
-    repartitionExprs: Option[String] = None,
-    repartitionNum: Option[Int] = None,
-    coalesce: Option[Int] = None,
-    schema: Option[String] = None,
-    config: Config = ConfigFactory.empty()
+                       name: String,
+                       source: Option[SparkSource] = None,
+                       options: Map[String, String] = Map(),
+                       dateFilterConfig: Option[DateFilterConfig] = None,
+                       dateColumn: Option[Column] = None,
+                       repartitionExprs: Option[String] = None,
+                       repartitionNum: Option[Int] = None,
+                       coalesce: Option[Int] = None,
+                       schema: Option[String] = None,
+                       config: Config = ConfigFactory.empty()
 ) extends Input
     with DateFilterer
     with Repartitioner
@@ -86,7 +86,7 @@ object SparkInput extends SparkSourceConfigurator {
     val source = getSparkSource
 
     val options          = getOptions
-    val dateRange        = getDateFilterRange
+    val dateFilterConfig = getDateFilterConfig
     val dateColumn       = getDateFilterColumn
     val repartitionExprs = getRepartitionExprs
     val repartitionNum   = getRepartitionNum
@@ -97,7 +97,7 @@ object SparkInput extends SparkSourceConfigurator {
       name,
       source,
       options,
-      dateRange,
+      dateFilterConfig,
       dateColumn,
       repartitionExprs,
       repartitionNum,
