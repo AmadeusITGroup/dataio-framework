@@ -11,7 +11,7 @@ class ElkConfiguratorTest extends AnyWordSpec with Matchers {
   "getIndex" should {
     "return index_x given Index = index_x" in {
       val config = ConfigFactory.parseMap(
-        Map("Index" -> "index_x")
+        Map("index" -> "index_x")
       )
       getIndex(config) shouldEqual "index_x"
     }
@@ -27,7 +27,7 @@ class ElkConfiguratorTest extends AnyWordSpec with Matchers {
   "getElkDateField" should {
     "return timestamp given DateField = timestamp" in {
       val config = ConfigFactory.parseMap(
-        Map("DateField" -> "timestamp")
+        Map("dateField" -> "timestamp")
       )
       getDateField(config) shouldEqual "timestamp"
     }
@@ -43,7 +43,7 @@ class ElkConfiguratorTest extends AnyWordSpec with Matchers {
   "getSubIndexDatePattern" should {
     "return yyyy.MM given SubIndexDatePattern = yyyy.MM" in {
       val config = ConfigFactory.parseMap(
-        Map("SubIndexDatePattern" -> "yyyy.MM")
+        Map("subIndexDatePattern" -> "yyyy.MM")
       )
       getSubIndexDatePattern(config) shouldEqual Some("yyyy.MM")
     }

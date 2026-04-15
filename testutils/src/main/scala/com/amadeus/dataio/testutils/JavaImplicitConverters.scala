@@ -1,25 +1,24 @@
 package com.amadeus.dataio.testutils
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.language.implicitConversions
 
-/**
- * <p>Contains helper implicit conversions to make working with functions expecting Java maps/lists easier.</p>
- * <p>These conversions are meant for tests only, for instance to create typesafe Config objects.</p>
- * <p> e.g.:
- * <pre>
- * import com.amadeus.dataio.test.JavaImplicitConverters._
- * import com.typesafe.config.ConfigFactory
- *
- * val config = ConfigFactory.parseMap(
- *   Map(
- *     "MyField" -> Seq("val1", "val2", "val3"),
- *     "MyOtherField" -> 5
- *   )
- * )
- * </pre>
- * </p>
- */
+/** <p>Contains helper implicit conversions to make working with functions expecting Java maps/lists easier.</p>
+  * <p>These conversions are meant for tests only, for instance to create typesafe Config objects.</p>
+  * <p> e.g.:
+  * <pre>
+  * import com.amadeus.dataio.test.JavaImplicitConverters._
+  * import com.typesafe.config.ConfigFactory
+  *
+  * val config = ConfigFactory.parseMap(
+  *   Map(
+  *     "MyField" -> Seq("val1", "val2", "val3"),
+  *     "MyOtherField" -> 5
+  *   )
+  * )
+  * </pre>
+  * </p>
+  */
 object JavaImplicitConverters {
   import scala.language.implicitConversions
 

@@ -8,16 +8,16 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 import scala.util.Try
 
 /** Class for reading kafka dataframe
- *
- * @param config Contains the Typesafe Config object that was used at instantiation to configure this entity.
- */
+  *
+  * @param config Contains the Typesafe Config object that was used at instantiation to configure this entity.
+  */
 case class KafkaOutput(
-                        name: String,
+    name: String,
     trigger: Option[Trigger],
-                        timeout: Option[Long],
+    timeout: Option[Long],
     mode: String,
     options: Map[String, String] = Map(),
-                        config: Config = ConfigFactory.empty()
+    config: Config = ConfigFactory.empty()
 ) extends Output
     with Logging {
 
@@ -53,9 +53,9 @@ case class KafkaOutput(
   }
 
   /** Create a unique query name based on output topic.
-   *
-   * @return a unique query name.
-   */
+    *
+    * @return a unique query name.
+    */
   private[streaming] def createQueryName(): String = {
 
     s"QN_${name}_${java.util.UUID.randomUUID}"
@@ -66,10 +66,10 @@ object KafkaOutput {
   import com.amadeus.dataio.config.fields._
 
   /** Creates an KafkaOutput based on a given configuration.
-   *
-   * @param config The collection of config nodes that will be used to instantiate KafkaOutput.
-   * @return a new instance of KafkaOutput.
-   */
+    *
+    * @param config The collection of config nodes that will be used to instantiate KafkaOutput.
+    * @return a new instance of KafkaOutput.
+    */
   def apply(implicit config: Config): KafkaOutput = {
     val name = Try {
       config.getString("name")

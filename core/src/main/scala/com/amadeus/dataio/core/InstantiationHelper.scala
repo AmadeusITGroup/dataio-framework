@@ -6,21 +6,19 @@ import scala.reflect.runtime.universe.TermName
 import scala.reflect.runtime.{universe => ru}
 import scala.util.{Failure, Success, Try}
 
-/**
- * Contains a variety of helper functions to facilitate instantiating objects using reflection.
- */
+/** Contains a variety of helper functions to facilitate instantiating objects using reflection.
+  */
 trait InstantiationHelper {
 
-  /**
-   * Creates an instance of a given class by using its companion object.
-   * @param config The configuration of the object to create.
-   * @tparam T The parent class of the class to instantiate.
-   * @return A new instance of the subclass of T provided in the config argument.
-   * @throws ClassNotFoundException If the class in the config argument can not be found.
-   * @throws Exception If the companion object of the class is not defined properly, that is to say missing an apply
-   *                   method taking a ConfigNode argument and returning a T. Finally, if the companion object of the
-   *                   class throws an exception.
-   */
+  /** Creates an instance of a given class by using its companion object.
+    * @param config The configuration of the object to create.
+    * @tparam T The parent class of the class to instantiate.
+    * @return A new instance of the subclass of T provided in the config argument.
+    * @throws ClassNotFoundException If the class in the config argument can not be found.
+    * @throws Exception If the companion object of the class is not defined properly, that is to say missing an apply
+    *                   method taking a ConfigNode argument and returning a T. Finally, if the companion object of the
+    *                   class throws an exception.
+    */
   def instantiateWithCompanionObject[T](config: ConfigNode): T = {
     // The Scala reflection API being difficult to debug, exceptions are
     // thrown here in order to guide the implementation of new entities
@@ -64,28 +62,29 @@ trait InstantiationHelper {
           // If the entity's companion object does not exist or its apply method does not have the proper signature, an IllegalArgumentException
           // will be thrown.
           case "IllegalArgumentException" =>
-            throw new Exception(s"$className is not a proper Type. This usually happens if the companion object does not have an apply method with a valid signature.")
+            throw new Exception(
+              s"$className is not a proper Type. This usually happens if the companion object does not have an apply method with a valid signature."
+            )
           // In all other cases, we don't know how to handle the error, so we re-throw the exception as is.
           case _ => throw ex
         }
     }
   }
 
-  /**
-   * Creates an instance of a given class by using its empty constructor.
-   * @param fullyQualifiedClassName The fully qualified name of the class to instantiate.
-   * @tparam T The parent class of the class to instantiate.
-   * @return A new instance of the subclass of T provided in the className argument.
-   */
+  /** Creates an instance of a given class by using its empty constructor.
+    * @param fullyQualifiedClassName The fully qualified name of the class to instantiate.
+    * @tparam T The parent class of the class to instantiate.
+    * @return A new instance of the subclass of T provided in the className argument.
+    */
   def instantiateWithEmptyConstructor[T](fullyQualifiedClassName: String): T = {
     Class
       .forName(fullyQualifiedClassName)
-      .newInstance
+      .getDeclaredConstructor()
+      .newInstance()
       .asInstanceOf[T]
   }
 }
 
-/**
- * Contains a variety of helper functions to facilitate instantiating objects using reflection.
- */
+/** Contains a variety of helper functions to facilitate instantiating objects using reflection.
+  */
 object InstantiationHelper extends InstantiationHelper

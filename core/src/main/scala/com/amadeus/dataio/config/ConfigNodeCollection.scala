@@ -25,14 +25,14 @@ object ConfigNodeCollection extends Logging {
     *         config argument.
     */
   def apply(nodeName: String, config: Config): ConfigNodeCollection = {
-    import collection.JavaConverters._
+    import scala.collection.JavaConverters._
 
     if (!config.hasPath(nodeName))
       return ConfigNodeCollection(Nil)
 
     val rawConfigs: Seq[Config] =
       Try {
-        config.getConfigList(nodeName).asScala
+        config.getConfigList(nodeName).asScala.toSeq
       } orElse Try {
         config.getConfig(nodeName) +: Nil
       } getOrElse {

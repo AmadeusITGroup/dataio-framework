@@ -24,10 +24,6 @@ trait SparkSuite extends Suite with BeforeAndAfter {
 
   implicit var sparkSession: SparkSession = _
 
-  object sparkTestImplicits extends SQLImplicits with Serializable {
-    protected override def _sqlContext: SQLContext = sparkSession.sqlContext
-  }
-
   before {
     sparkSession = SparkSession
       .builder()

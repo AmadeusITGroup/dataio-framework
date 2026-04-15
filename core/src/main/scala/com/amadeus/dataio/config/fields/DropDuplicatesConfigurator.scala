@@ -15,7 +15,7 @@ trait DropDuplicatesConfigurator {
     Try {
       config.getString("drop_duplicates").split(",").map(_.trim).toList
     } orElse Try {
-      config.getStringList("drop_duplicates").asScala
+      config.getStringList("drop_duplicates").asScala.toSeq
     } getOrElse {
       Seq[String]()
     }

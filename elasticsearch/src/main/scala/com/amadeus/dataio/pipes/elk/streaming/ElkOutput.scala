@@ -8,20 +8,20 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 
 import scala.util.Try
 
-/**
- * Allows to write stream data to Elasticsearch with automatic date sub-indexing.
- *
- * @param index the Index to write to.
- * @param trigger the trigger to be used for the streaming query.
- * @param timeout timeout in milliseconds.
- * @param mode mode.
- * @param options options.
- * @param config Contains the Typesafe Config object that was used at instantiation to configure this entity.
- * @param dateField The date field to use for sub index partitioning.
- * @param suffixDatePattern the date suffix pattern to use for the full index.
- * @param outputName the output name used to define the streaming query name.
- */
+/** Allows to write stream data to Elasticsearch with automatic date sub-indexing.
+  *
+  * @param index the Index to write to.
+  * @param trigger the trigger to be used for the streaming query.
+  * @param timeout timeout in milliseconds.
+  * @param mode mode.
+  * @param options options.
+  * @param config Contains the Typesafe Config object that was used at instantiation to configure this entity.
+  * @param dateField The date field to use for sub index partitioning.
+  * @param suffixDatePattern the date suffix pattern to use for the full index.
+  * @param outputName the output name used to define the streaming query name.
+  */
 case class ElkOutput(
+    name: String,
     index: String,
     trigger: Option[Trigger],
     timeout: Long,
@@ -29,18 +29,16 @@ case class ElkOutput(
     options: Map[String, String] = Map.empty,
     config: Config = ConfigFactory.empty(),
     dateField: String,
-    suffixDatePattern: String,
-    outputName: Option[String]
+    suffixDatePattern: String
 ) extends Output
     with Logging
     with ElkOutputCommons {
 
-  /**
-   * Writes data to this output.
-   *
-   * @param data  The data to write.
-   * @param spark The SparkSession which will be used to write the data.
-   */
+  /** Writes data to this output.
+    *
+    * @param data  The data to write.
+    * @param spark The SparkSession which will be used to write the data.
+    */
   def write[T](data: Dataset[T])(implicit spark: SparkSession): Unit = {
     val fullIndexName = computeFullIndexName()
     logger.info(s"Write dataframe to Elasticsearch index [$fullIndexName] using trigger [$trigger]")
@@ -64,19 +62,11 @@ case class ElkOutput(
     streamingQuery.stop()
   }
 
-  /**
-   * Create a unique query name based on output path if exists.
-   *
-   * @return a unique query name.
-   */
-  private[streaming] def createQueryName(): String = {
-
-    outputName match {
-      case Some(name) => s"QN_${name}_${index}_${java.util.UUID.randomUUID}"
-      case _          => s"QN_${index}_${java.util.UUID.randomUUID}"
-    }
-
-  }
+  /** Create a unique query name based on output path if exists.
+    *
+    * @return a unique query name.
+    */
+  private[streaming] def createQueryName(): String = s"QN_${index}_${java.util.UUID.randomUUID}"
 }
 
 object ElkOutput {
@@ -84,17 +74,21 @@ object ElkOutput {
   import com.amadeus.dataio.pipes.elk.ElkConfigurator._
   import com.amadeus.dataio.pipes.elk.ElkOutputCommons.{DefaultSuffixDatePattern, checkNodesIsDefined, checkPortIsDefined}
 
-  /**
-   * Creates an ElkOutput based on a given configuration.
-   *
-   * @param config The collection of config nodes that will be used to instantiate KafkaOutput.
-   * @return a new instance of ElkOutput.
-   */
+  /** Creates an ElkOutput based on a given configuration.
+    *
+    * @param config The collection of config nodes that will be used to instantiate KafkaOutput.
+    * @return a new instance of ElkOutput.
+    */
   def apply(implicit config: Config): ElkOutput = {
+    val name = Try {
+      config.getString("name")
+    } getOrElse {
+      throw new Exception("Missing required `name` field in configuration.")
+    }
 
     val index = getIndex
 
-    val mode = config.getString("Mode")
+    val mode = config.getString("mode")
 
     val trigger = getStreamingTrigger
 
@@ -109,18 +103,16 @@ object ElkOutput {
 
     val suffixDatePattern = getSubIndexDatePattern.getOrElse(DefaultSuffixDatePattern)
 
-    val name = Try(config.getString("Name")).toOption
-
     ElkOutput(
+      name = name,
       index = index,
       trigger = trigger,
-      timeout = timeout,
+      timeout = timeout.get,
       mode = mode,
       options = options,
       config = config,
       dateField = dateField,
-      suffixDatePattern = suffixDatePattern,
-      outputName = name
+      suffixDatePattern = suffixDatePattern
     )
   }
 }

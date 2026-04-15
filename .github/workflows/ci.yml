@@ -16,29 +16,52 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - spark_profile: spark34
+            java_version: "11"
+            label: "Spark 3.4 / Java 11"
+          - spark_profile: spark35
+            java_version: "11"
+            label: "Spark 3.5 / Java 11"
+          - spark_profile: spark40
+            java_version: "17"
+            label: "Spark 4.0 / Java 17"
+
+    name: "Build (${{ matrix.label }})"
+
+    env:
+      SPARK_PROFILE: ${{ matrix.spark_profile }}
+
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: "temurin"
-          java-version: 8
+          java-version: ${{ matrix.java_version }}
           cache: "sbt"
 
       - uses: sbt/setup-sbt@v1
         with:
           sbt-runner-version: 1.10.11
 
-      - run: sbt compile
+      - name: Compile
+        run: sbt compile
 
-      - run: sbt test
+      - name: Test
+        run: sbt test
 
-      - run: sbt package
+      - name: Package
+        run: sbt package
 
-      - run: tar cf artefacts.tar target/ */target/
+      - name: Bundle artifacts
+        run: tar cf artefacts.tar target/ */target/
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Artefacts
+          name: Artefacts-${{ matrix.spark_profile }}
           path: artefacts.tar
-

@@ -1,7 +1,8 @@
 # Data I/O
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Spark](https://img.shields.io/badge/Spark-3.5.0-blue)](https://spark.apache.org/releases/spark-release-3-4-1.html)
+[![Spark 3.4](https://img.shields.io/badge/Spark-3.4.4-blue)](https://spark.apache.org/releases/spark-release-3-4-4.html)
+[![Spark 3.5](https://img.shields.io/badge/Spark-3.5.3-blue)](https://spark.apache.org/releases/spark-release-3-5-3.html)
 [![Scala](https://img.shields.io/badge/Scala-2.12.15-red)](https://www.scala-lang.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)][contributing]
 
@@ -14,6 +15,36 @@ Data I/O is an open source project that provides a flexible and scalable framewo
 - Support for batch and streaming data processing
 - Extensible architecture for custom data processors and pipelines
 - Scalable and fault-tolerant processing using Apache Spark
+- **Multi-Spark version support** — builds and publishes for Spark 3.3, 3.4, and 3.5 from a single codebase
+
+## Supported Spark Versions
+
+| Profile    | Spark | Scala | Java | Snowflake | Elasticsearch |
+|------------|-------|-------|------|-----------|---------------|
+| `spark34`  | 3.4.4 | 2.12  | 11   | ✅         | ✅             |
+| `spark35`  | 3.5.3 | 2.12  | 11   | ✅         | ✅             |
+| `spark40`  | 4.0.2 | 2.13  | 17   | ❌         | ❌             |
+
+> **Note:** Spark 4.0 support is experimental. Snowflake and Elasticsearch connectors
+> do not yet have Spark 4.0–compatible releases.
+
+## Building Locally
+
+Select a Spark profile via the `SPARK_PROFILE` environment variable (defaults to `spark35`):
+
+```bash
+# Build for Spark 3.4
+SPARK_PROFILE=spark34 sbt compile
+
+# Run tests for Spark 3.4
+SPARK_PROFILE=spark34 sbt test
+
+# Package for Spark 3.5 (default)
+sbt package
+```
+
+All version-coupled dependencies (Spark, Scala, Java target, connectors) are defined in
+[`project/SparkProfiles.scala`](project/SparkProfiles.scala) — the single source of truth.
 
 ## Getting Started
 To get started with Data I/O, please refer to the [documentation][gettingstarted] for installation instructions, usage examples, and API references.
