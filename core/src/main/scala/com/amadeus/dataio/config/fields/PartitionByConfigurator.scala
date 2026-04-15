@@ -15,7 +15,7 @@ trait PartitionByConfigurator extends Logging {
     Try {
       config.getString("partition_by").split(",").map(_.trim).toList
     } orElse Try {
-      config.getStringList("partition_by").asScala
+      config.getStringList("partition_by").asScala.toSeq
     } getOrElse {
       Seq[String]()
     }

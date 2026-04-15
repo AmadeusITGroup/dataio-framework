@@ -14,7 +14,7 @@ trait SortWithinPartitionsConfigurator {
     Try {
       config.getString("sort_within_partitions.exprs").split(",").map(_.trim).toSeq
     } orElse Try {
-      config.getStringList("sort_within_partitions.exprs").asScala
+      config.getStringList("sort_within_partitions.exprs").asScala.toSeq
     } getOrElse {
       Seq[String]()
     }
