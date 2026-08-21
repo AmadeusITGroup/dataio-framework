@@ -32,14 +32,14 @@ object ConfigNodeCollection extends Logging {
 
     val rawConfigs: Seq[Config] =
       Try {
-        config.getConfigList(nodeName).asScala
+        config.getConfigList(nodeName).asScala.toSeq
       } orElse Try {
         config.getConfig(nodeName) +: Nil
       } getOrElse {
         throw new Exception("A configuration node must be a List or an Object.")
       }
 
-    if (rawConfigs == Nil) {
+    if (rawConfigs.isEmpty) {
       logger.warn(s"A $nodeName node was found in the configuration, but it is empty.")
       return ConfigNodeCollection(Nil)
     }

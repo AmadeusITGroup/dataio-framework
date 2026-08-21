@@ -2,7 +2,7 @@ package com.amadeus.dataio.config.fields
 
 import com.typesafe.config.Config
 
-import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
+import scala.collection.JavaConverters._
 import scala.util.Try
 
 trait OptionsConfigurator {
@@ -18,7 +18,7 @@ trait OptionsConfigurator {
 
     try {
       optionsConfig match {
-        case Some(o) => o.root.keySet.map(k => (k, o.getString("\"" + k + "\""))).toMap
+        case Some(o) => o.root.keySet.asScala.map(k => (k, o.getString("\"" + k + "\""))).toMap
         case None    => Map[String, String]()
       }
     } catch {
