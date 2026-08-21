@@ -1,0 +1,15 @@
+output:
+  type: com.amadeus.dataio.pipes.elk.streaming.ElkOutput
+  fields:
+    - name: trigger
+      mandatory: "No"
+      description: Sets the trigger for the stream query. Can be AvailableNow, Continuous or empty. Controls the trigger() Spark function.
+      example: trigger = "AvailableNow"
+    - name: duration
+      mandatory: "No"
+      description: Sets the trigger for the stream query. Controls the trigger() Spark function. In case no trigger is defined, will set a ProcessingTime trigger.
+      example: duration = "60 seconds"
+    - name: timeout
+      mandatory: "No"
+      description: Controls the amount of time before returning from the streaming query. In case it is not defined, the query is not awaited.
+      example: timeout = "24 hours"

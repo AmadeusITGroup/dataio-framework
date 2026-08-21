@@ -12,15 +12,13 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
 
       val config = ConfigFactory.parseMap(
         Map(
-          "Output" -> Map(
-            "Type"      -> "com.amadeus.dataio.pipes.elk.batch.ElkOutput",
-            "Name"      -> "my-test-elk",
-            "Nodes"     -> "bktv001, bktv002.amadeus.net",
-            "Ports"     -> "9200",
-            "Index"     -> "test.index",
-            "DateField" -> "docDate",
-            "Mode"      -> "append",
-            "Options" -> Map(
+          "output" -> Map(
+            "type"       -> "com.amadeus.dataio.pipes.elk.batch.ElkOutput",
+            "name"       -> "my-test-elk",
+            "index"      -> "test.index",
+            "date_field" -> "docDate",
+            "mode"       -> "append",
+            "options" -> Map(
               "\"es.net.ssl.cert.allow.self.signed\"" -> true,
               "\"es.index.auto.create\""              -> true,
               "\"es.mapping.id\""                     -> "docId",
@@ -31,13 +29,14 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
         )
       )
 
-      val elkStreamingOutput = ElkOutput.apply(config.getConfig("Output"))
+      val elkOutput = ElkOutput.apply(config.getConfig("output"))
 
-      elkStreamingOutput.index shouldEqual "test.index"
-      elkStreamingOutput.dateField shouldEqual "docDate"
-      elkStreamingOutput.suffixDatePattern shouldEqual "yyyy.MM"
-      elkStreamingOutput.mode shouldEqual "append"
-      elkStreamingOutput.options shouldEqual Map(
+      elkOutput.name shouldEqual "my-test-elk"
+      elkOutput.index shouldEqual "test.index"
+      elkOutput.dateField shouldEqual "docDate"
+      elkOutput.suffixDatePattern shouldEqual "yyyy.MM"
+      elkOutput.mode shouldEqual "append"
+      elkOutput.options shouldEqual Map(
         "es.net.ssl.cert.allow.self.signed" -> "true",
         "es.index.auto.create"              -> "true",
         "es.mapping.id"                     -> "docId",
@@ -51,16 +50,14 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
 
       val config = ConfigFactory.parseMap(
         Map(
-          "Output" -> Map(
-            "Type"                -> "com.amadeus.dataio.pipes.elk.batch.ElkOutput",
-            "Name"                -> "my-test-elk",
-            "Nodes"               -> "bktv001, bktv002.amadeus.net",
-            "Ports"               -> "9200",
-            "Index"               -> "test.index",
-            "DateField"           -> "docDate",
-            "SubIndexDatePattern" -> "yyyy.MM.dd",
-            "Mode"                -> "append",
-            "Options" -> Map(
+          "output" -> Map(
+            "type"                   -> "com.amadeus.dataio.pipes.elk.batch.ElkOutput",
+            "name"                   -> "my-test-elk",
+            "index"                  -> "test.index",
+            "date_field"             -> "docDate",
+            "sub_index_date_pattern" -> "yyyy.MM.dd",
+            "mode"                   -> "append",
+            "options" -> Map(
               "\"es.net.ssl.cert.allow.self.signed\"" -> true,
               "\"es.index.auto.create\""              -> true,
               "\"es.mapping.id\""                     -> "docId",
@@ -71,13 +68,14 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
         )
       )
 
-      val elkStreamingOutput = ElkOutput.apply(config.getConfig("Output"))
+      val elkOutput = ElkOutput.apply(config.getConfig("output"))
 
-      elkStreamingOutput.index shouldEqual "test.index"
-      elkStreamingOutput.dateField shouldEqual "docDate"
-      elkStreamingOutput.suffixDatePattern shouldEqual "yyyy.MM.dd"
-      elkStreamingOutput.mode shouldEqual "append"
-      elkStreamingOutput.options shouldEqual Map(
+      elkOutput.name shouldEqual "my-test-elk"
+      elkOutput.index shouldEqual "test.index"
+      elkOutput.dateField shouldEqual "docDate"
+      elkOutput.suffixDatePattern shouldEqual "yyyy.MM.dd"
+      elkOutput.mode shouldEqual "append"
+      elkOutput.options shouldEqual Map(
         "es.net.ssl.cert.allow.self.signed" -> "true",
         "es.index.auto.create"              -> "true",
         "es.mapping.id"                     -> "docId",
@@ -85,6 +83,48 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
         "es.nodes"                          -> "bktv001, bktv002.amadeus.net"
       )
 
+    }
+
+    "throw an exception given a missing name" in {
+      val config = ConfigFactory.parseMap(
+        Map(
+          "output" -> Map(
+            "type"       -> "com.amadeus.dataio.pipes.elk.batch.ElkOutput",
+            "index"      -> "test.index",
+            "date_field" -> "docDate",
+            "mode"       -> "append",
+            "options" -> Map(
+              "\"es.port\""  -> "9200",
+              "\"es.nodes\"" -> "bktv001"
+            )
+          )
+        )
+      )
+
+      intercept[Exception] {
+        ElkOutput.apply(config.getConfig("output"))
+      }
+    }
+
+    "throw an exception given a missing mode" in {
+      val config = ConfigFactory.parseMap(
+        Map(
+          "output" -> Map(
+            "type"       -> "com.amadeus.dataio.pipes.elk.batch.ElkOutput",
+            "name"       -> "my-test-elk",
+            "index"      -> "test.index",
+            "date_field" -> "docDate",
+            "options" -> Map(
+              "\"es.port\""  -> "9200",
+              "\"es.nodes\"" -> "bktv001"
+            )
+          )
+        )
+      )
+
+      intercept[Exception] {
+        ElkOutput.apply(config.getConfig("output"))
+      }
     }
   }
 }

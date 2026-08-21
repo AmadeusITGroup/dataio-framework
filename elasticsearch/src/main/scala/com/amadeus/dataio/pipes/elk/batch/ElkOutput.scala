@@ -11,6 +11,7 @@ import scala.util.Try
 /**
  * Allows to write batch data to Elasticsearch with automatic date sub-indexing.
  *
+ * @param name the name of the output.
  * @param index the Index to write to.
  * @param mode mode.
  * @param dateField The date field to use for sub index partitioning.
@@ -19,6 +20,7 @@ import scala.util.Try
  * @param config Contains the Typesafe Config object that was used at instantiation to configure this entity.
  */
 case class ElkOutput(
+    name: String,
     index: String,
     mode: String,
     dateField: String,
@@ -37,7 +39,10 @@ case class ElkOutput(
    */
   override def write[T](data: Dataset[T])(implicit spark: SparkSession): Unit = {
     val fullIndexName = computeFullIndexName()
-    logger.info(s"Write dataframe to Elasticsearch index [$fullIndexName]")
+    logger.info(s"writing to elasticsearch: $name")
+    if (options.nonEmpty) logger.info(s"options: $options")
+    logger.info(s"index: $fullIndexName")
+    logger.info(s"mode: $mode")
 
     data.write.format(Format).mode(mode).options(options).save(fullIndexName)
   }
@@ -51,14 +56,23 @@ object ElkOutput {
   /**
    * Creates an ElkOutput based on a given configuration.
    *
-   * @param config The collection of config nodes that will be used to instantiate KafkaOutput.
+   * @param config The collection of config nodes that will be used to instantiate ElkOutput.
    * @return a new instance of ElkOutput.
    */
   def apply(implicit config: Config): ElkOutput = {
+    val name = Try {
+      config.getString("name")
+    } getOrElse {
+      throw new Exception("Missing required `name` field in configuration.")
+    }
 
     val index = getIndex
 
-    val mode = config.getString("Mode")
+    val mode = Try {
+      config.getString("mode")
+    } getOrElse {
+      throw new Exception("Missing required `mode` field in configuration.")
+    }
 
     val options = Try(getOptions).getOrElse(Map())
 
@@ -69,7 +83,15 @@ object ElkOutput {
 
     val suffixDatePattern = getSubIndexDatePattern.getOrElse(DefaultSuffixDatePattern)
 
-    ElkOutput(index = index, mode = mode, dateField = dateField, suffixDatePattern = suffixDatePattern, options = options, config = config)
+    ElkOutput(
+      name = name,
+      index = index,
+      mode = mode,
+      dateField = dateField,
+      suffixDatePattern = suffixDatePattern,
+      options = options,
+      config = config
+    )
   }
 
 }

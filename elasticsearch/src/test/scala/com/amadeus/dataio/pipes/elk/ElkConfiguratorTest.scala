@@ -9,14 +9,14 @@ class ElkConfiguratorTest extends AnyWordSpec with Matchers {
   import com.amadeus.dataio.pipes.elk.ElkConfigurator._
 
   "getIndex" should {
-    "return index_x given Index = index_x" in {
+    "return index_x given index = index_x" in {
       val config = ConfigFactory.parseMap(
-        Map("Index" -> "index_x")
+        Map("index" -> "index_x")
       )
       getIndex(config) shouldEqual "index_x"
     }
 
-    "throw an exception given missing Index" in {
+    "throw an exception given missing index" in {
       val config = ConfigFactory.parseMap(Map.empty[String, String])
       intercept[Exception] {
         getIndex(config)
@@ -24,15 +24,15 @@ class ElkConfiguratorTest extends AnyWordSpec with Matchers {
     }
   }
 
-  "getElkDateField" should {
-    "return timestamp given DateField = timestamp" in {
+  "getDateField" should {
+    "return timestamp given date_field = timestamp" in {
       val config = ConfigFactory.parseMap(
-        Map("DateField" -> "timestamp")
+        Map("date_field" -> "timestamp")
       )
       getDateField(config) shouldEqual "timestamp"
     }
 
-    "throw an exception given missing Index" in {
+    "throw an exception given missing date_field" in {
       val config = ConfigFactory.parseMap(Map.empty[String, String])
       intercept[Exception] {
         getDateField(config)
@@ -41,14 +41,14 @@ class ElkConfiguratorTest extends AnyWordSpec with Matchers {
   }
 
   "getSubIndexDatePattern" should {
-    "return yyyy.MM given SubIndexDatePattern = yyyy.MM" in {
+    "return yyyy.MM given sub_index_date_pattern = yyyy.MM" in {
       val config = ConfigFactory.parseMap(
-        Map("SubIndexDatePattern" -> "yyyy.MM")
+        Map("sub_index_date_pattern" -> "yyyy.MM")
       )
       getSubIndexDatePattern(config) shouldEqual Some("yyyy.MM")
     }
 
-    "return None given missing SubIndexDatePattern" in {
+    "return None given missing sub_index_date_pattern" in {
       val config = ConfigFactory.parseMap(Map.empty[String, String])
       getSubIndexDatePattern(config) shouldBe None
     }

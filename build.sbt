@@ -9,6 +9,7 @@ val sparkVersion          = "3.5.0"
 val typesafeConfigVersion = "1.4.3"
 val slf4jApiVersion       = "2.0.7"
 val commonsIoVersion      = "2.13.0"
+val elasticsearchVersion  = "9.0.0"
 
 // RELEASE SETUP
 import sbt.Keys.libraryDependencies
@@ -150,7 +151,7 @@ lazy val elasticsearch = (project in file("elasticsearch"))
     commonSettings,
     name := "dataio-elasticsearch",
     libraryDependencies ++= Seq(
-      "org.elasticsearch" %% "elasticsearch-spark-30" % "8.17.4"
+      "org.elasticsearch" %% "elasticsearch-spark-30" % elasticsearchVersion
         exclude ("org.scala-lang", "scala-library")
         exclude ("org.scala-lang", "scala-reflect")
         exclude ("org.slf4j", "slf4j-api")
@@ -158,6 +159,8 @@ lazy val elasticsearch = (project in file("elasticsearch"))
         exclude ("org.apache.spark", "spark-sql_" + scalaVersion.value.substring(0, 4))
         exclude ("org.apache.spark", "spark-catalyst_" + scalaVersion.value.substring(0, 4))
         exclude ("org.apache.spark", "spark-streaming_" + scalaVersion.value.substring(0, 4))
+        // elasticsearch-spark-30 pulls spark-yarn from an older Spark line; keep the build on a single Spark version
+        exclude ("org.apache.spark", "spark-yarn_" + scalaVersion.value.substring(0, 4))
     )
   )
   .dependsOn(core, testutils % Test)
@@ -179,4 +182,4 @@ lazy val root = (project in file("."))
     name := "dataio",
     publish / skip := true
   )
-  .aggregate(core, test, kafka, snowflake)
+  .aggregate(core, test, kafka, snowflake, elasticsearch)

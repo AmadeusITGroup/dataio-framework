@@ -16,7 +16,7 @@ object ElkConfigurator {
    *                                             for the expected fields.
    */
   def getIndex(implicit config: Config): String = {
-    config.getString("Index")
+    config.getString("index")
   }
 
   /**
@@ -26,7 +26,7 @@ object ElkConfigurator {
    *                                             for the expected fields.
    */
   def getDateField(implicit config: Config): String = {
-    config.getString("DateField")
+    config.getString("date_field")
   }
 
   /**
@@ -34,6 +34,6 @@ object ElkConfigurator {
    * @return A Option[String] of the date pattern to use for sub index partitioning.
    */
   def getSubIndexDatePattern(implicit config: Config): Option[String] = {
-    Try(config.getString("SubIndexDatePattern")).toOption
+    Try(config.getString("sub_index_date_pattern")).toOption
   }
 }

@@ -1,0 +1,32 @@
+name: Elasticsearch
+description: Allows the connection to Elasticsearch to automatically publish data to an index, in batch or streaming, with automatic date sub-indexing.
+
+code_directory: elasticsearch
+
+links:
+  - name: Elasticsearch for Apache Hadoop / Spark documentation
+    url: https://www.elastic.co/guide/en/elasticsearch/hadoop/current/spark.html
+
+top_warning: Elasticsearch pipes are write-only, there is no Elasticsearch input.
+
+fields:
+  - name: index
+    mandatory: "Yes"
+    description: The Elasticsearch index to write to. A date suffix computed from date_field and sub_index_date_pattern is appended to it.
+    example: index = "my-index"
+  - name: date_field
+    mandatory: "Yes"
+    description: The field of the dataset holding the document date, used to build the date suffix of the index.
+    example: date_field = "documentDate"
+  - name: sub_index_date_pattern
+    mandatory: "No"
+    description: The date pattern used to build the date suffix of the index.
+    example: sub_index_date_pattern = "yyyy.MM.dd"
+    default: yyyy.MM
+  - name: mode
+    mandatory: "Yes"
+    description: The writing mode.
+    example: mode = "append"
+  - name: options
+    description: Elasticsearch options, as key = value pairs. These are passed as options to the Spark connector for Elasticsearch. Note that es.nodes and es.port are mandatory.
+    example: options { "es.nodes" = "my-elk-host.mycompany.net", "es.port" = "9200" }
