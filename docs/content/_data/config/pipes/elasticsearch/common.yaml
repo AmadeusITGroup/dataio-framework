@@ -29,4 +29,4 @@ fields:
     example: mode = "append"
   - name: options
     description: Elasticsearch options, as key = value pairs. These are passed as options to the Spark connector for Elasticsearch. Note that es.nodes and es.port are mandatory.
-    example: options { "es.nodes" = "my-elk-host.mycompany.net", "es.port" = "9200" }
+    example: options { "es.nodes" = "my-elasticsearch-host.mycompany.net", "es.port" = "9200" }

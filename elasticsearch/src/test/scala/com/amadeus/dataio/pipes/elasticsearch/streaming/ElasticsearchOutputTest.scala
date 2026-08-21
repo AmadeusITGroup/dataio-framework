@@ -1,4 +1,4 @@
-package com.amadeus.dataio.pipes.elk.streaming
+package com.amadeus.dataio.pipes.elasticsearch.streaming
 
 import com.amadeus.dataio.testutils.JavaImplicitConverters._
 import com.typesafe.config.ConfigFactory
@@ -8,7 +8,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 import scala.concurrent.duration.Duration
 
-class ElkOutputTest extends AnyWordSpec with Matchers {
+class ElasticsearchOutputTest extends AnyWordSpec with Matchers {
 
   val options: Map[String, Any] = Map(
     "\"es.net.ssl.cert.allow.self.signed\"" -> true,
@@ -26,14 +26,14 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
     "es.nodes"                          -> "bktv001, bktv002.amadeus.net"
   )
 
-  "ElkOutput" should {
+  "ElasticsearchOutput" should {
     "be initialized according to configuration" in {
 
       val config = ConfigFactory.parseMap(
         Map(
           "output" -> Map(
-            "type"       -> "com.amadeus.dataio.pipes.elk.streaming.ElkOutput",
-            "name"       -> "my-test-elk",
+            "type"       -> "com.amadeus.dataio.pipes.elasticsearch.streaming.ElasticsearchOutput",
+            "name"       -> "my-test-elasticsearch",
             "index"      -> "test.index",
             "date_field" -> "docDate",
             "mode"       -> "append",
@@ -44,16 +44,16 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
         )
       )
 
-      val elkStreamingOutput = ElkOutput.apply(config.getConfig("output"))
+      val elasticsearchStreamingOutput = ElasticsearchOutput.apply(config.getConfig("output"))
 
-      elkStreamingOutput.name shouldEqual "my-test-elk"
-      elkStreamingOutput.index shouldEqual "test.index"
-      elkStreamingOutput.dateField shouldEqual "docDate"
-      elkStreamingOutput.suffixDatePattern shouldEqual "yyyy.MM"
-      elkStreamingOutput.mode shouldEqual "append"
-      elkStreamingOutput.trigger shouldEqual Some(Trigger.ProcessingTime(Duration("6 hours")))
-      elkStreamingOutput.timeout shouldEqual Some(86400000)
-      elkStreamingOutput.options shouldEqual expectedOptions
+      elasticsearchStreamingOutput.name shouldEqual "my-test-elasticsearch"
+      elasticsearchStreamingOutput.index shouldEqual "test.index"
+      elasticsearchStreamingOutput.dateField shouldEqual "docDate"
+      elasticsearchStreamingOutput.suffixDatePattern shouldEqual "yyyy.MM"
+      elasticsearchStreamingOutput.mode shouldEqual "append"
+      elasticsearchStreamingOutput.trigger shouldEqual Some(Trigger.ProcessingTime(Duration("6 hours")))
+      elasticsearchStreamingOutput.timeout shouldEqual Some(86400000)
+      elasticsearchStreamingOutput.options shouldEqual expectedOptions
     }
 
     "be initialized according to configuration with a continuous trigger" in {
@@ -61,8 +61,8 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
       val config = ConfigFactory.parseMap(
         Map(
           "output" -> Map(
-            "type"       -> "com.amadeus.dataio.pipes.elk.streaming.ElkOutput",
-            "name"       -> "my-test-elk",
+            "type"       -> "com.amadeus.dataio.pipes.elasticsearch.streaming.ElasticsearchOutput",
+            "name"       -> "my-test-elasticsearch",
             "index"      -> "test.index",
             "date_field" -> "docDate",
             "mode"       -> "append",
@@ -74,12 +74,12 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
         )
       )
 
-      val elkStreamingOutput = ElkOutput.apply(config.getConfig("output"))
+      val elasticsearchStreamingOutput = ElasticsearchOutput.apply(config.getConfig("output"))
 
-      elkStreamingOutput.name shouldEqual "my-test-elk"
-      elkStreamingOutput.trigger shouldEqual Some(Trigger.Continuous(Duration("6 hours")))
-      elkStreamingOutput.timeout shouldEqual Some(86400000)
-      elkStreamingOutput.options shouldEqual expectedOptions
+      elasticsearchStreamingOutput.name shouldEqual "my-test-elasticsearch"
+      elasticsearchStreamingOutput.trigger shouldEqual Some(Trigger.Continuous(Duration("6 hours")))
+      elasticsearchStreamingOutput.timeout shouldEqual Some(86400000)
+      elasticsearchStreamingOutput.options shouldEqual expectedOptions
     }
 
     "be initialized according to configuration with date suffix pattern" in {
@@ -87,8 +87,8 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
       val config = ConfigFactory.parseMap(
         Map(
           "output" -> Map(
-            "type"                   -> "com.amadeus.dataio.pipes.elk.streaming.ElkOutput",
-            "name"                   -> "my-test-elk",
+            "type"                   -> "com.amadeus.dataio.pipes.elasticsearch.streaming.ElasticsearchOutput",
+            "name"                   -> "my-test-elasticsearch",
             "index"                  -> "test.index",
             "date_field"             -> "docDate",
             "sub_index_date_pattern" -> "yyyy.MM.dd",
@@ -100,11 +100,11 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
         )
       )
 
-      val elkStreamingOutput = ElkOutput.apply(config.getConfig("output"))
+      val elasticsearchStreamingOutput = ElasticsearchOutput.apply(config.getConfig("output"))
 
-      elkStreamingOutput.suffixDatePattern shouldEqual "yyyy.MM.dd"
-      elkStreamingOutput.trigger shouldEqual Some(Trigger.AvailableNow())
-      elkStreamingOutput.timeout shouldEqual Some(86400000)
+      elasticsearchStreamingOutput.suffixDatePattern shouldEqual "yyyy.MM.dd"
+      elasticsearchStreamingOutput.trigger shouldEqual Some(Trigger.AvailableNow())
+      elasticsearchStreamingOutput.timeout shouldEqual Some(86400000)
     }
 
     "be initialized according to configuration without trigger nor timeout" in {
@@ -112,8 +112,8 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
       val config = ConfigFactory.parseMap(
         Map(
           "output" -> Map(
-            "type"       -> "com.amadeus.dataio.pipes.elk.streaming.ElkOutput",
-            "name"       -> "my-test-elk",
+            "type"       -> "com.amadeus.dataio.pipes.elasticsearch.streaming.ElasticsearchOutput",
+            "name"       -> "my-test-elasticsearch",
             "index"      -> "test.index",
             "date_field" -> "docDate",
             "mode"       -> "append",
@@ -122,17 +122,17 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
         )
       )
 
-      val elkStreamingOutput = ElkOutput.apply(config.getConfig("output"))
+      val elasticsearchStreamingOutput = ElasticsearchOutput.apply(config.getConfig("output"))
 
-      elkStreamingOutput.trigger shouldEqual None
-      elkStreamingOutput.timeout shouldEqual None
+      elasticsearchStreamingOutput.trigger shouldEqual None
+      elasticsearchStreamingOutput.timeout shouldEqual None
     }
 
     "throw an exception given a missing name" in {
       val config = ConfigFactory.parseMap(
         Map(
           "output" -> Map(
-            "type"       -> "com.amadeus.dataio.pipes.elk.streaming.ElkOutput",
+            "type"       -> "com.amadeus.dataio.pipes.elasticsearch.streaming.ElasticsearchOutput",
             "index"      -> "test.index",
             "date_field" -> "docDate",
             "mode"       -> "append",
@@ -142,7 +142,7 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
       )
 
       intercept[Exception] {
-        ElkOutput.apply(config.getConfig("output"))
+        ElasticsearchOutput.apply(config.getConfig("output"))
       }
     }
   }
@@ -153,7 +153,7 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
 
     "return a query name based on the output name and index" in {
 
-      val elkOutput = ElkOutput(
+      val elasticsearchOutput = ElasticsearchOutput(
         name = "myTestOutput",
         index = "test.index",
         trigger = None,
@@ -163,7 +163,7 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
         suffixDatePattern = "yyyy.MM"
       )
 
-      val queryName = elkOutput.createQueryName()
+      val queryName = elasticsearchOutput.createQueryName()
 
       queryName should fullyMatch regex "^QN_myTestOutput_test.index_" + uuidPattern + "$"
     }

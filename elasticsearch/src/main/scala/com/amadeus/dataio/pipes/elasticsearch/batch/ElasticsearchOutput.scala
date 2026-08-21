@@ -1,8 +1,12 @@
-package com.amadeus.dataio.pipes.elk.batch
+package com.amadeus.dataio.pipes.elasticsearch.batch
 
 import com.amadeus.dataio.core.{Logging, Output}
-import com.amadeus.dataio.pipes.elk.ElkOutputCommons
-import com.amadeus.dataio.pipes.elk.ElkOutputCommons.{DefaultSuffixDatePattern, checkNodesIsDefined, checkPortIsDefined}
+import com.amadeus.dataio.pipes.elasticsearch.ElasticsearchOutputCommons
+import com.amadeus.dataio.pipes.elasticsearch.ElasticsearchOutputCommons.{
+  DefaultSuffixDatePattern,
+  checkNodesIsDefined,
+  checkPortIsDefined
+}
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.{Dataset, SparkSession}
 
@@ -19,7 +23,7 @@ import scala.util.Try
  * @param options options.
  * @param config Contains the Typesafe Config object that was used at instantiation to configure this entity.
  */
-case class ElkOutput(
+case class ElasticsearchOutput(
     name: String,
     index: String,
     mode: String,
@@ -29,7 +33,7 @@ case class ElkOutput(
     config: Config = ConfigFactory.empty()
 ) extends Output
     with Logging
-    with ElkOutputCommons {
+    with ElasticsearchOutputCommons {
 
   /**
    * Writes data to this output.
@@ -48,18 +52,18 @@ case class ElkOutput(
   }
 }
 
-object ElkOutput {
+object ElasticsearchOutput {
 
   import com.amadeus.dataio.config.fields._
-  import com.amadeus.dataio.pipes.elk.ElkConfigurator._
+  import com.amadeus.dataio.pipes.elasticsearch.ElasticsearchConfigurator._
 
   /**
-   * Creates an ElkOutput based on a given configuration.
+   * Creates an ElasticsearchOutput based on a given configuration.
    *
-   * @param config The collection of config nodes that will be used to instantiate ElkOutput.
-   * @return a new instance of ElkOutput.
+   * @param config The collection of config nodes that will be used to instantiate ElasticsearchOutput.
+   * @return a new instance of ElasticsearchOutput.
    */
-  def apply(implicit config: Config): ElkOutput = {
+  def apply(implicit config: Config): ElasticsearchOutput = {
     val name = Try {
       config.getString("name")
     } getOrElse {
@@ -83,7 +87,7 @@ object ElkOutput {
 
     val suffixDatePattern = getSubIndexDatePattern.getOrElse(DefaultSuffixDatePattern)
 
-    ElkOutput(
+    ElasticsearchOutput(
       name = name,
       index = index,
       mode = mode,

@@ -1,2 +1,2 @@
 output:
-  type: com.amadeus.dataio.pipes.elk.batch.ElkOutput
+  type: com.amadeus.dataio.pipes.elasticsearch.batch.ElasticsearchOutput

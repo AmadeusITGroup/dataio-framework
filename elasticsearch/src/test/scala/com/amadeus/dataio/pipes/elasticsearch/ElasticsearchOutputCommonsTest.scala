@@ -1,21 +1,21 @@
-package com.amadeus.dataio.pipes.elk
+package com.amadeus.dataio.pipes.elasticsearch
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class ElkOutputCommonsTest extends AnyWordSpec with Matchers {
+class ElasticsearchOutputCommonsTest extends AnyWordSpec with Matchers {
 
-  case class TestElkOutput(
+  case class TestElasticsearchOutput(
       index: String = "testIndex",
       dateField: String = "documentDate",
       suffixDatePattern: String = "yyyy.MM.dd",
       options: Map[String, String] = Map.empty
-  ) extends ElkOutputCommons
+  ) extends ElasticsearchOutputCommons
 
   "computeFullIndexName" should {
 
     "return the index with date suffix" in {
-      val result = TestElkOutput().computeFullIndexName()
+      val result = TestElasticsearchOutput().computeFullIndexName()
 
       result shouldEqual "testIndex.{documentDate|yyyy.MM.dd}"
     }
@@ -24,7 +24,7 @@ class ElkOutputCommonsTest extends AnyWordSpec with Matchers {
   "checkNodesIsDefined" should {
     "not throw an exception given options map with nodes" in {
       try {
-        ElkOutputCommons.checkNodesIsDefined(Map("es.port" -> "9200", "es.nodes" -> "localhost1, localhost2"))
+        ElasticsearchOutputCommons.checkNodesIsDefined(Map("es.port" -> "9200", "es.nodes" -> "localhost1, localhost2"))
       } catch {
         case _: IllegalArgumentException => fail("no exceptions should have been thrown")
       }
@@ -32,14 +32,14 @@ class ElkOutputCommonsTest extends AnyWordSpec with Matchers {
 
     "throw an exception given options map with empty nodes" in {
       intercept[IllegalArgumentException] {
-        ElkOutputCommons.checkNodesIsDefined(Map("es.port" -> "9200", "es.nodes" -> ""))
+        ElasticsearchOutputCommons.checkNodesIsDefined(Map("es.port" -> "9200", "es.nodes" -> ""))
       }
 
     }
 
     "return false given options map without nodes" in {
       intercept[IllegalArgumentException] {
-        ElkOutputCommons.checkNodesIsDefined(Map("es.port" -> "9200"))
+        ElasticsearchOutputCommons.checkNodesIsDefined(Map("es.port" -> "9200"))
       }
     }
   }
@@ -47,7 +47,7 @@ class ElkOutputCommonsTest extends AnyWordSpec with Matchers {
   "checkPortIsDefined" should {
     "not throw an exception given options map with port" in {
       try {
-        ElkOutputCommons.checkPortIsDefined(Map("es.port" -> "9200", "es.nodes" -> "localhost1, localhost2"))
+        ElasticsearchOutputCommons.checkPortIsDefined(Map("es.port" -> "9200", "es.nodes" -> "localhost1, localhost2"))
       } catch {
         case _: IllegalArgumentException => fail("no exceptions should have been thrown")
       }
@@ -55,14 +55,14 @@ class ElkOutputCommonsTest extends AnyWordSpec with Matchers {
 
     "throw an exception given options map with empty port" in {
       intercept[IllegalArgumentException] {
-        ElkOutputCommons.checkPortIsDefined(Map("es.port" -> "", "es.nodes" -> "localhost1, localhost2"))
+        ElasticsearchOutputCommons.checkPortIsDefined(Map("es.port" -> "", "es.nodes" -> "localhost1, localhost2"))
       }
 
     }
 
     "return false given options map without port" in {
       intercept[IllegalArgumentException] {
-        ElkOutputCommons.checkPortIsDefined(Map("es.nodes" -> "localhost1, localhost2"))
+        ElasticsearchOutputCommons.checkPortIsDefined(Map("es.nodes" -> "localhost1, localhost2"))
       }
     }
   }

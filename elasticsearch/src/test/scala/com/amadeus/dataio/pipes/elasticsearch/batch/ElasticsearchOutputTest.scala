@@ -1,20 +1,20 @@
-package com.amadeus.dataio.pipes.elk.batch
+package com.amadeus.dataio.pipes.elasticsearch.batch
 
 import com.amadeus.dataio.testutils.JavaImplicitConverters._
 import com.typesafe.config.ConfigFactory
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class ElkOutputTest extends AnyWordSpec with Matchers {
+class ElasticsearchOutputTest extends AnyWordSpec with Matchers {
 
-  "ElkOutput" should {
+  "ElasticsearchOutput" should {
     "be initialized according to configuration" in {
 
       val config = ConfigFactory.parseMap(
         Map(
           "output" -> Map(
-            "type"       -> "com.amadeus.dataio.pipes.elk.batch.ElkOutput",
-            "name"       -> "my-test-elk",
+            "type"       -> "com.amadeus.dataio.pipes.elasticsearch.batch.ElasticsearchOutput",
+            "name"       -> "my-test-elasticsearch",
             "index"      -> "test.index",
             "date_field" -> "docDate",
             "mode"       -> "append",
@@ -29,14 +29,14 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
         )
       )
 
-      val elkOutput = ElkOutput.apply(config.getConfig("output"))
+      val elasticsearchOutput = ElasticsearchOutput.apply(config.getConfig("output"))
 
-      elkOutput.name shouldEqual "my-test-elk"
-      elkOutput.index shouldEqual "test.index"
-      elkOutput.dateField shouldEqual "docDate"
-      elkOutput.suffixDatePattern shouldEqual "yyyy.MM"
-      elkOutput.mode shouldEqual "append"
-      elkOutput.options shouldEqual Map(
+      elasticsearchOutput.name shouldEqual "my-test-elasticsearch"
+      elasticsearchOutput.index shouldEqual "test.index"
+      elasticsearchOutput.dateField shouldEqual "docDate"
+      elasticsearchOutput.suffixDatePattern shouldEqual "yyyy.MM"
+      elasticsearchOutput.mode shouldEqual "append"
+      elasticsearchOutput.options shouldEqual Map(
         "es.net.ssl.cert.allow.self.signed" -> "true",
         "es.index.auto.create"              -> "true",
         "es.mapping.id"                     -> "docId",
@@ -51,8 +51,8 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
       val config = ConfigFactory.parseMap(
         Map(
           "output" -> Map(
-            "type"                   -> "com.amadeus.dataio.pipes.elk.batch.ElkOutput",
-            "name"                   -> "my-test-elk",
+            "type"                   -> "com.amadeus.dataio.pipes.elasticsearch.batch.ElasticsearchOutput",
+            "name"                   -> "my-test-elasticsearch",
             "index"                  -> "test.index",
             "date_field"             -> "docDate",
             "sub_index_date_pattern" -> "yyyy.MM.dd",
@@ -68,14 +68,14 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
         )
       )
 
-      val elkOutput = ElkOutput.apply(config.getConfig("output"))
+      val elasticsearchOutput = ElasticsearchOutput.apply(config.getConfig("output"))
 
-      elkOutput.name shouldEqual "my-test-elk"
-      elkOutput.index shouldEqual "test.index"
-      elkOutput.dateField shouldEqual "docDate"
-      elkOutput.suffixDatePattern shouldEqual "yyyy.MM.dd"
-      elkOutput.mode shouldEqual "append"
-      elkOutput.options shouldEqual Map(
+      elasticsearchOutput.name shouldEqual "my-test-elasticsearch"
+      elasticsearchOutput.index shouldEqual "test.index"
+      elasticsearchOutput.dateField shouldEqual "docDate"
+      elasticsearchOutput.suffixDatePattern shouldEqual "yyyy.MM.dd"
+      elasticsearchOutput.mode shouldEqual "append"
+      elasticsearchOutput.options shouldEqual Map(
         "es.net.ssl.cert.allow.self.signed" -> "true",
         "es.index.auto.create"              -> "true",
         "es.mapping.id"                     -> "docId",
@@ -89,7 +89,7 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
       val config = ConfigFactory.parseMap(
         Map(
           "output" -> Map(
-            "type"       -> "com.amadeus.dataio.pipes.elk.batch.ElkOutput",
+            "type"       -> "com.amadeus.dataio.pipes.elasticsearch.batch.ElasticsearchOutput",
             "index"      -> "test.index",
             "date_field" -> "docDate",
             "mode"       -> "append",
@@ -102,7 +102,7 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
       )
 
       intercept[Exception] {
-        ElkOutput.apply(config.getConfig("output"))
+        ElasticsearchOutput.apply(config.getConfig("output"))
       }
     }
 
@@ -110,8 +110,8 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
       val config = ConfigFactory.parseMap(
         Map(
           "output" -> Map(
-            "type"       -> "com.amadeus.dataio.pipes.elk.batch.ElkOutput",
-            "name"       -> "my-test-elk",
+            "type"       -> "com.amadeus.dataio.pipes.elasticsearch.batch.ElasticsearchOutput",
+            "name"       -> "my-test-elasticsearch",
             "index"      -> "test.index",
             "date_field" -> "docDate",
             "options" -> Map(
@@ -123,7 +123,7 @@ class ElkOutputTest extends AnyWordSpec with Matchers {
       )
 
       intercept[Exception] {
-        ElkOutput.apply(config.getConfig("output"))
+        ElasticsearchOutput.apply(config.getConfig("output"))
       }
     }
   }

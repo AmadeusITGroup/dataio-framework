@@ -25,7 +25,6 @@ case class SparkProfile(
     sparkSnowflake: String,
     elasticsearchArtifact: String,
     elasticsearch: String,
-    embeddedKafka: String,
     testJavaOptions: Seq[String] = Seq.empty
 )
 
@@ -44,8 +43,7 @@ object SparkProfile {
     scalamock             = "5.2.0",
     sparkSnowflake        = "3.1.1",
     elasticsearchArtifact = "elasticsearch-spark-30",
-    elasticsearch         = "9.0.0",
-    embeddedKafka         = "3.5.1"
+    elasticsearch         = "9.0.0"
   )
 
   val all: Seq[SparkProfile] = Seq(spark350)

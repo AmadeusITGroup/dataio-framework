@@ -1,9 +1,9 @@
-package com.amadeus.dataio.pipes.elk
+package com.amadeus.dataio.pipes.elasticsearch
 
 /**
- * Define common functions to be used for ElkOutput with date sub-indexing.
+ * Define common functions to be used for ElasticsearchOutput with date sub-indexing.
  */
-private[elk] trait ElkOutputCommons {
+private[elasticsearch] trait ElasticsearchOutputCommons {
 
   /** the spark format to use to write to elasticsearch */
   val Format: String = "es"
@@ -18,7 +18,7 @@ private[elk] trait ElkOutputCommons {
   def suffixDatePattern: String
 
   /**
-   * compute the  full index name with a date partitioning to optimize ELK queries performances.
+   * compute the  full index name with a date partitioning to optimize Elasticsearch queries performances.
    *
    * @return the full index name with the date partitioning suffix
    */
@@ -26,9 +26,9 @@ private[elk] trait ElkOutputCommons {
 }
 
 /**
- * Define common static variable to be used for ElkOutput with date sub-indexing.
+ * Define common static variable to be used for ElasticsearchOutput with date sub-indexing.
  */
-private[elk] object ElkOutputCommons {
+private[elasticsearch] object ElasticsearchOutputCommons {
 
   /** the default date suffix pattern to use for the full index. */
   val DefaultSuffixDatePattern: String = "yyyy.MM"

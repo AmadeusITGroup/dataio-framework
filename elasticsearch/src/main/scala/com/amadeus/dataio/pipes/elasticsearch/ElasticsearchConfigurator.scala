@@ -1,4 +1,4 @@
-package com.amadeus.dataio.pipes.elk
+package com.amadeus.dataio.pipes.elasticsearch
 
 import com.typesafe.config.Config
 
@@ -7,7 +7,7 @@ import scala.util.Try
 /**
  * Elasticsearch parameterization
  */
-object ElkConfigurator {
+object ElasticsearchConfigurator {
 
   /**
    * @param config The typesafe Config object holding the configuration.

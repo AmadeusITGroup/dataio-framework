@@ -1,5 +1,5 @@
 output:
-  type: com.amadeus.dataio.pipes.elk.streaming.ElkOutput
+  type: com.amadeus.dataio.pipes.elasticsearch.streaming.ElasticsearchOutput
   fields:
     - name: trigger
       mandatory: "No"
