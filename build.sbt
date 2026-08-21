@@ -1,29 +1,27 @@
 // BUILD SETUP
+// All versions come from the selected Spark profile, so that the lines we support stay internally
+// consistent. Select one with the SPARK_PROFILE environment variable, and build it with the JDK the
+// profile names: selecting it also checks the running JVM. See project/SparkProfile.scala.
+val profile = SparkProfile.selected
+
 ThisBuild / organization := "com.amadeus.dataio"
 ThisBuild / versionScheme := Some("early-semver")
-ThisBuild / scalaVersion := "2.12.15"
-
-val scalatestVersion      = "3.2.15"
-val scalamockVersion      = "5.2.0"
-val sparkVersion          = "3.5.0"
-val typesafeConfigVersion = "1.4.3"
-val slf4jApiVersion       = "2.0.7"
-val commonsIoVersion      = "2.13.0"
-val elasticsearchVersion  = "9.0.0"
+ThisBuild / scalaVersion := profile.scala
 
 // RELEASE SETUP
 import sbt.Keys.libraryDependencies
 import sbtrelease.ReleaseStateTransformations.*
 
+// These operate on the plain semver held in version.sbt. The Spark line is not part of it.
 def getReleaseVersion(ver: String, bumpType: String): String = {
-  val pattern = """(\d+)\.(\d+)\.(\d+)-(spark[\d.]+)-SNAPSHOT""".r
+  val pattern = """(\d+)\.(\d+)\.(\d+)-SNAPSHOT""".r
 
   ver match {
-    case pattern(major, minor, patch, sparkVersion) =>
+    case pattern(major, minor, patch) =>
       bumpType match {
-        case "MAJOR" => s"${major.toInt + 1}.0.0-$sparkVersion"
-        case "MINOR" => s"$major.${minor.toInt + 1}.0-$sparkVersion"
-        case "PATCH" => s"$major.$minor.$patch-$sparkVersion"
+        case "MAJOR" => s"${major.toInt + 1}.0.0"
+        case "MINOR" => s"$major.${minor.toInt + 1}.0"
+        case "PATCH" => s"$major.$minor.$patch"
         case _       => sys.error(s"Invalid RELEASE_TYPE: $bumpType")
       }
     case _ => sys.error(s"Invalid version format: $ver")
@@ -31,11 +29,11 @@ def getReleaseVersion(ver: String, bumpType: String): String = {
 }
 
 def getReleaseNextVersion(ver: String): String = {
-  val pattern = """(\d+)\.(\d+)\.(\d+)-(spark[\d.]+)""".r
+  val pattern = """(\d+)\.(\d+)\.(\d+)""".r
 
   ver match {
-    case pattern(major, minor, patch, sparkVersion) =>
-      s"$major.$minor.${patch.toInt + 1}-$sparkVersion-SNAPSHOT"
+    case pattern(major, minor, patch) =>
+      s"$major.$minor.${patch.toInt + 1}-SNAPSHOT"
     case _ => sys.error(s"Invalid version format: $ver")
   }
 }
@@ -44,13 +42,17 @@ val bumpType = sys.env.getOrElse("RELEASE_TYPE", "PATCH")
 releaseVersion := { getReleaseVersion(_, bumpType) }
 releaseNextVersion := { getReleaseNextVersion }
 
-ThisBuild / releaseProcess := Seq[ReleaseStep](
+// Bump and tag only: publishing is a separate, per-profile step so that every supported Spark line
+// is published from one tag. See .github/workflows/publish.yml.
+//
+// Scoped to this project, not ThisBuild: sbt-release defines releaseProcess in its projectSettings,
+// so a ThisBuild-scoped value is shadowed by the plugin's default and silently ignored.
+releaseProcess := Seq[ReleaseStep](
   checkSnapshotDependencies, // Ensure no SNAPSHOT dependencies exist
   inquireVersions,           // Ask for new version (auto-updated)
   setReleaseVersion,         // Set the new version
   commitReleaseVersion,      // Commit with updated version
   tagRelease,                // Tag in Git
-  publishArtifacts,          // Publish JARs
   setNextVersion,            // Set the next development version
   commitNextVersion,         // Commit next version
   pushChanges                // Push everything to Git
@@ -86,14 +88,31 @@ ThisBuild / pomExtra :=
 ThisBuild / Test / parallelExecution := false
 ThisBuild / Test / publishArtifact := false
 
+// Later JDKs need Spark to be granted access to JDK internals. Those flags only apply to a forked
+// JVM, so fork exactly when the profile asks for them.
+ThisBuild / Test / fork := profile.testJavaOptions.nonEmpty
+ThisBuild / Test / javaOptions ++= profile.testJavaOptions
+
 // PROJECTS SETUP
-lazy val commonSettings = Seq(
+
+/** Appends the Spark line to the plain semver held in version.sbt, for the published modules.
+  *
+  * Scoped per project rather than on ThisBuild, which would be circular: it is defined in terms of
+  * the ThisBuild-scoped value that version.sbt sets. Deliberately not applied to [[root]], which is
+  * not published and whose `version` is what the release steps read, bump and tag: they must see
+  * plain semver, since one release covers every Spark line.
+  */
+lazy val versionSettings = Seq(
+  version := SparkProfile.publishedVersion((ThisBuild / version).value, profile)
+)
+
+lazy val commonSettings = versionSettings ++ Seq(
   libraryDependencies ++= Seq(
-    "org.apache.spark" %% "spark-sql"  % sparkVersion,
-    "org.apache.spark" %% "spark-core" % sparkVersion,
-    "com.typesafe"      % "config"     % typesafeConfigVersion,
-    "org.scalatest"    %% "scalatest"  % scalatestVersion % Test,
-    "org.scalamock"    %% "scalamock"  % scalamockVersion % Test
+    "org.apache.spark" %% "spark-sql"  % profile.spark,
+    "org.apache.spark" %% "spark-core" % profile.spark,
+    "com.typesafe"      % "config"     % profile.typesafeConfig,
+    "org.scalatest"    %% "scalatest"  % profile.scalatest % Test,
+    "org.scalamock"    %% "scalamock"  % profile.scalamock % Test
   )
 )
 
@@ -104,11 +123,11 @@ lazy val commonSettings = Seq(
 lazy val testutils = (project in file("testutils"))
   .settings(
     libraryDependencies ++= Seq(
-      "org.apache.spark" %% "spark-sql"  % sparkVersion,
-      "org.apache.spark" %% "spark-core" % sparkVersion,
-      "com.typesafe"      % "config"     % typesafeConfigVersion,
-      "org.scalatest"    %% "scalatest"  % scalatestVersion,
-      "org.scalamock"    %% "scalamock"  % scalamockVersion
+      "org.apache.spark" %% "spark-sql"  % profile.spark,
+      "org.apache.spark" %% "spark-core" % profile.spark,
+      "com.typesafe"      % "config"     % profile.typesafeConfig,
+      "org.scalatest"    %% "scalatest"  % profile.scalatest,
+      "org.scalamock"    %% "scalamock"  % profile.scalamock
     ),
     publish / skip := true
   )
@@ -118,8 +137,8 @@ lazy val core = (project in file("core"))
     commonSettings,
     name := "dataio-core",
     libraryDependencies ++= Seq(
-      "org.slf4j"  % "slf4j-api"  % slf4jApiVersion,
-      "commons-io" % "commons-io" % commonsIoVersion
+      "org.slf4j"  % "slf4j-api"  % profile.slf4jApi,
+      "commons-io" % "commons-io" % profile.commonsIo
     )
   )
   .dependsOn(testutils % Test)
@@ -129,9 +148,7 @@ lazy val kafka = (project in file("kafka"))
     commonSettings,
     name := "dataio-kafka",
     libraryDependencies ++= Seq(
-      "org.apache.spark" %% "spark-sql-kafka-0-10" % sparkVersion,
-      "io.github.embeddedkafka" %% "embedded-kafka" % "3.5.1" % Test,
-      "io.github.embeddedkafka" %% "embedded-kafka-streams" % "3.5.1" % Test
+      "org.apache.spark" %% "spark-sql-kafka-0-10" % profile.spark
     )
   )
   .dependsOn(core, testutils % Test)
@@ -141,7 +158,7 @@ lazy val snowflake = (project in file("snowflake"))
     commonSettings,
     name := "dataio-snowflake",
     libraryDependencies ++= Seq(
-      "net.snowflake" %% "spark-snowflake" % f"3.1.1"
+      "net.snowflake" %% "spark-snowflake" % profile.sparkSnowflake
     )
   )
   .dependsOn(core, testutils % Test)
@@ -151,16 +168,17 @@ lazy val elasticsearch = (project in file("elasticsearch"))
     commonSettings,
     name := "dataio-elasticsearch",
     libraryDependencies ++= Seq(
-      "org.elasticsearch" %% "elasticsearch-spark-30" % elasticsearchVersion
+      // The connector's artifact name is per Spark line, not just its version.
+      "org.elasticsearch" %% profile.elasticsearchArtifact % profile.elasticsearch
         exclude ("org.scala-lang", "scala-library")
         exclude ("org.scala-lang", "scala-reflect")
         exclude ("org.slf4j", "slf4j-api")
-        exclude ("org.apache.spark", "spark-core_" + scalaVersion.value.substring(0, 4))
-        exclude ("org.apache.spark", "spark-sql_" + scalaVersion.value.substring(0, 4))
-        exclude ("org.apache.spark", "spark-catalyst_" + scalaVersion.value.substring(0, 4))
-        exclude ("org.apache.spark", "spark-streaming_" + scalaVersion.value.substring(0, 4))
-        // elasticsearch-spark-30 pulls spark-yarn from an older Spark line; keep the build on a single Spark version
-        exclude ("org.apache.spark", "spark-yarn_" + scalaVersion.value.substring(0, 4))
+        exclude ("org.apache.spark", "spark-core_" + scalaBinaryVersion.value)
+        exclude ("org.apache.spark", "spark-sql_" + scalaBinaryVersion.value)
+        exclude ("org.apache.spark", "spark-catalyst_" + scalaBinaryVersion.value)
+        exclude ("org.apache.spark", "spark-streaming_" + scalaBinaryVersion.value)
+        // The connector pulls spark-yarn from an older Spark line; keep the build on a single Spark version
+        exclude ("org.apache.spark", "spark-yarn_" + scalaBinaryVersion.value)
     )
   )
   .dependsOn(core, testutils % Test)
@@ -170,8 +188,8 @@ lazy val test = (project in file("test"))
     commonSettings,
     name := "dataio-test",
     libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % scalatestVersion,
-      "org.scalamock" %% "scalamock" % scalamockVersion
+      "org.scalatest" %% "scalatest" % profile.scalatest,
+      "org.scalamock" %% "scalamock" % profile.scalamock
     )
   )
   .dependsOn(core, testutils % Test)

@@ -12,15 +12,15 @@ on:
           - MAJOR
 
 jobs:
-  publish:
+  # Bumps the version, tags it and pushes, without publishing anything: every supported Spark line
+  # is then published from that single tag by the job below, so they all share a version timeline.
+  release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      packages: write
-      attestations: write
-      id-token: write
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
     env:
-      GITHUB_REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       RELEASE_TYPE: ${{ inputs.release_type }}
     steps:
       - uses: actions/checkout@v4
@@ -30,6 +30,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      # Only bumping and tagging happens here, but the build still has to load, so this must be the
+      # JDK of the build's default Spark profile.
       - uses: actions/setup-java@v3
         with:
           java-version: 8
@@ -41,6 +43,45 @@ jobs:
           sbt-runner-version: 1.10.11
 
       - name: Run SBT release
-        run: sbt 'release with-defaults'
+        id: release
+        run: |
+          sbt 'release with-defaults'
+          echo "tag=$(git describe --tags --abbrev=0)" >> "$GITHUB_OUTPUT"
+
+  publish:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    strategy:
+      # One line failing should not stop the others from being published: re-running the failed leg
+      # is easy, whereas cancelling mid-upload is not.
+      fail-fast: false
+      matrix:
+        include:
+          # `java` must match the profile's own JDK, declared in project/SparkProfile.scala. The
+          # build checks this and fails fast, so the two cannot drift silently.
+          - spark_profile: "3.5.0"
+            java: 8
+    env:
+      GITHUB_REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SPARK_PROFILE: ${{ matrix.spark_profile }}
+    steps:
+      # The tag, not the branch: the branch already holds the next -SNAPSHOT version.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+
+      - uses: actions/setup-java@v3
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: "temurin"
+          cache: "sbt"
+
+      - uses: sbt/setup-sbt@v1
+        with:
+          sbt-runner-version: 1.10.11
+
+      - run: sbt publish
 
 run-name: ${{ format('Publishing new version - {0}', inputs.release_type) }}

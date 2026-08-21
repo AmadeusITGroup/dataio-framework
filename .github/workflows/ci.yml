@@ -16,13 +16,25 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      # Every supported Spark line has to keep building, so don't hide one line's failure behind
+      # another's.
+      fail-fast: false
+      matrix:
+        include:
+          # Must stay in step with the profiles in project/SparkProfile.scala, `java` included: the
+          # build checks the running JDK against the profile and fails fast, so drift is caught here.
+          - spark_profile: "3.5.0"
+            java: 8
+    env:
+      SPARK_PROFILE: ${{ matrix.spark_profile }}
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-java@v3
         with:
           distribution: "temurin"
-          java-version: 8
+          java-version: ${{ matrix.java }}
           cache: "sbt"
 
       - uses: sbt/setup-sbt@v1
@@ -39,6 +51,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Artefacts
+          name: Artefacts-spark${{ matrix.spark_profile }}
           path: artefacts.tar
-
